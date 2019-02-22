@@ -28,3 +28,11 @@ Function Withdraw() Uint64
     // If not within block_between_withdraw, then change destinationAddress to Sender Addr (maybe way to store this in SendToAddr and not show in daemon out?)
     // TODO Future: Save ~1% or less for tx fees outside of chain txfees into SC balance
 End Function
+
+
+
+
+// each time called: need to have unique # associate with depositor; deposit_count = LOAD("deposit_count")+1
+// then STORE("depositor_address" + (deposit_count-1), SIGNER()) // store address for later on if needed
+// then STORE("depositee_address", destinationAddress) // store 
+// see tester.bas, works to check a unique val after deposit addr (test string 'words')
