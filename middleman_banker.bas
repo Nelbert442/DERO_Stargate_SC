@@ -60,7 +60,8 @@ Function CheckPendingTx(destinationAddress String) Uint64
 
     580 STORE(senderAddr + new_deposit_count, destinationAddress) // start re-assignment process. Set Withdrawer to original sender
     590 STORE(senderAddr + destinationAddress, depositAmount) // Set deposit amount variable
-    600 STORE(destinationAddress + senderAddr + new_deposit_count, BLOCK_TOPOHEIGHT() + LOAD("block_between_withdraw"))
+    // 600 STORE(destinationAddress + senderAddr + new_deposit_count, BLOCK_TOPOHEIGHT() + LOAD("block_between_withdraw")) // do not store a new block height because line 540 will then reach withdraw stage
+    // TODO: clean up the other transaction information so that you cannot go withdraw after the block height has increased past allotted height
     610 STORE("total_deposit_count", new_deposit_count)
     620 PRINTF "Reached top block height for deposit, reversing deposit back to sender."
     630 RETURN 0
@@ -103,7 +104,8 @@ Function Withdraw() Uint64
 
     600 STORE(senderAddr + new_deposit_count, SIGNER()) // start re-assignment process. Set Withdrawer to original sender
     610 STORE(senderAddr + SIGNER(), depositAmount) // Set deposit amount variable
-    620 STORE(SIGNER() + senderAddr + new_deposit_count, BLOCK_TOPOHEIGHT() + LOAD("block_between_withdraw"))
+    // 620 STORE(SIGNER() + senderAddr + new_deposit_count, BLOCK_TOPOHEIGHT() + LOAD("block_between_withdraw")) // do not store a new block height because line 540 will then reach withdraw stage
+    // TODO: clean up the other transaction information so that you cannot go withdraw after the block height has increased past allotted height
     630 STORE("total_deposit_count", new_deposit_count)
     640 PRINTF "Reached top block height for deposit, reversing deposit back to sender."
     650 RETURN 0
