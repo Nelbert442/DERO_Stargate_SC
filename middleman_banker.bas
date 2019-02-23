@@ -50,16 +50,13 @@ Function CheckPendingTx(destinationAddress String) Uint64
     200 PRINTF "Did not find any transactions for %d" destinationAddress // doesn't know what SIGNER() is, assign to a variable and print that instead but got here . PERFECT!
     210 RETURN 1
 
-    500 PRINTF "Transaction found!" // value of destinationAddress + tempcounter is the first step to receiving the amount
-    510 IF EXISTS(destinationAddress + tempcounter) == 1 THEN GOTO 520 ELSE GOTO 980
-    520 LET senderAddr = LOAD(destinationAddress + tempcounter) // need to check if exists
-
-    530 IF EXISTS(destinationAddress + senderAddr) == 1 THEN GOTO 540 ELSE GOTO 980
-    540 LET depositAmount = LOAD(destinationAddress + senderAddr) // need to check if exists
-
-    550 IF EXISTS(senderAddr + tempcounter) == 1 THEN GOTO 560 ELSE GOTO 700 // if no block_height_limit, then means transaction reverted at some point and original sender gets amount back
-    560 LET block_height_limit = LOAD(senderAddr + destinationAddress + tempcounter) // need to check if exists
-    570 IF block_height_limit >= BLOCK_TOPOHEIGHT() THEN GOTO 700
+    500 LET senderAddr = LOAD(destinationAddress + tempcounter) // need to check if exists
+    510 IF EXISTS(destinationAddress + senderAddr) == 1 THEN GOTO 520 ELSE GOTO 980
+    520 LET depositAmount = LOAD(destinationAddress + senderAddr) // need to check if exists
+    530 PRINTF "Transaction found!" // value of destinationAddress + tempcounter is the first step to receiving the amount
+    540 IF EXISTS(senderAddr + tempcounter) == 1 THEN GOTO 550 ELSE GOTO 700 // if no block_height_limit, then means transaction reverted at some point and original sender gets amount back
+    550 LET block_height_limit = LOAD(senderAddr + destinationAddress + tempcounter) // need to check if exists
+    560 IF block_height_limit >= BLOCK_TOPOHEIGHT() THEN GOTO 700
 
     580 STORE(senderAddr + new_deposit_count, destinationAddress) // start re-assignment process. Set Withdrawer to original sender
     590 STORE(senderAddr + destinationAddress, depositAmount) // Set deposit amount variable
@@ -67,10 +64,10 @@ Function CheckPendingTx(destinationAddress String) Uint64
     610 PRINTF "Reached top block height for deposit, reversing deposit back to sender."
     620 RETURN 1
 
-    700 PRINTF "There are pending TX available to Withdraw still from"
+    700 PRINTF "There are pending TX available to Withdraw still from: %d" destinationAddress
     710 RETURN 0
 
-    980 PRINTF "There are no pending TX available to Withdraw from"
+    980 PRINTF "There are no pending TX available to Withdraw from: %d" destinationAddress
     990 RETURN 1
 End Function
 
@@ -81,38 +78,27 @@ Function Withdraw() Uint64
     // TODO Future: loop back and get all pending Tx, not just the first one that comes up (need todo in CheckPendingTx as well)
 
     10 DIM tempcounter,depositAmount,block_height_limit,new_deposit_count as Uint64
-    20 DIM senderAddr as String
-    21 PRINTF "21"
+    20 DIM senderAddr,tempSigner as String
     30 LET tempcounter = LOAD("total_deposit_count")
-    31 PRINTF "31"
-    40 IF tempcounter == 0 THEN GOTO 200
-    41 PRINTF "41"
-    50 LET new_deposit_count = tempcounter + 1
-    51 PRINTF "51"
+    40 LET tempSigner = SIGNER() // just used for Line 200 output
+    50 IF tempcounter == 0 THEN GOTO 200
+    60 LET new_deposit_count = tempcounter + 1
 
     100 IF EXISTS(SIGNER() + tempcounter) == 1 THEN GOTO 500
-    101 PRINTF "101"
     110 LET tempcounter = tempcounter - 1
-    111 PRINTF "111"
     120 PRINTF "Decreasing tempcounter to %d" tempcounter
-    121 PRINTF "121"
     130 IF tempcounter != 0 THEN GOTO 100 ELSE GOTO 200
 
-    200 PRINTF "Did not find any transactions for %d" SIGNER() // doesn't know what SIGNER() is, assign to a variable and print that instead but got here . PERFECT!
-    201 PRINTF "201"
+    200 PRINTF "Did not find any transactions for %d" tempSigner // doesn't know what SIGNER() is, assign to a variable and print that instead but got here . PERFECT!
     210 RETURN 1
 
-    500 PRINTF "500"
-    510 LET senderAddr = LOAD(SIGNER() + tempcounter)
-    511 PRINTF "511"
-    520 IF EXISTS(SIGNER() + senderAddr) == 1 THEN GOTO 530 ELSE GOTO 200
-    521 PRINTF "521"
-    530 LET depositAmount = LOAD(SIGNER() + senderAddr)
-    531 PRINTF "531"
-    540 PRINTF "Transaction found!"
-    550 IF EXISTS(senderAddr + tempcounter) == 1 THEN GOTO 560 ELSE GOTO 700 // if no block_height_limit, then means transaction reverted at some point and original sender gets amount back
-    560 LET block_height_limit = LOAD(senderAddr + SIGNER() + tempcounter)
-    570 IF block_height_limit >= BLOCK_TOPOHEIGHT() THEN GOTO 700
+    500 LET senderAddr = LOAD(SIGNER() + tempcounter)
+    510 IF EXISTS(SIGNER() + senderAddr) == 1 THEN GOTO 520 ELSE GOTO 200
+    520 LET depositAmount = LOAD(SIGNER() + senderAddr)
+    530 PRINTF "Transaction found!"
+    540 IF EXISTS(senderAddr + tempcounter) == 1 THEN GOTO 550 ELSE GOTO 700 // if no block_height_limit, then means transaction reverted at some point and original sender gets amount back
+    550 LET block_height_limit = LOAD(senderAddr + SIGNER() + tempcounter)
+    560 IF block_height_limit >= BLOCK_TOPOHEIGHT() THEN GOTO 700
 
     600 STORE(senderAddr + new_deposit_count, SIGNER()) // start re-assignment process. Set Withdrawer to original sender
     610 STORE(senderAddr + SIGNER(), depositAmount) // Set deposit amount variable
@@ -124,12 +110,7 @@ Function Withdraw() Uint64
     710 RETURN 0
 End Function
 
-/*
-//30 IF LOAD("deposit_address" + tempcounter) == SIGNER() THEN GOTO 500
-//530 LET block_height_limit = LOAD(senderAddr + tempcounter)
-*/
-
-
+//NOTES
 // each time called: need to have unique # associate with depositor; deposit_count = LOAD("deposit_count")+1
 // then STORE("depositor_address" + (deposit_count-1), SIGNER()) // store address for later on if needed
 // then STORE("depositee_address", destinationAddress) // store 
