@@ -73,7 +73,7 @@ Function CheckPendingTx(destinationAddress String) Uint64
     660 PRINTF "Previous Tx information has been cleaned up and reset to default values."
     670 RETURN 0
 
-    800 PRINTF "There are pending TX available to Withdraw still from: %d" destinationAddress
+    800 PRINTF "There are pending TX available to Withdraw still, run Withdraw() to get them before they time out! For: %d" destinationAddress
     810 RETURN 0
 End Function
 
