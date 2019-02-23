@@ -9,8 +9,9 @@ Function Initialize() Uint64
 	10 STORE("owner", SIGNER())
 	20 STORE("block_between_withdraw", 100)   
 	30 STORE("scbalance", 0)
-	40 PRINTF "Initialize executed"
-	50 RETURN 0
+    40 STORE("total_deposit_count", 0)
+	50 PRINTF "Initialize executed"
+	60 RETURN 0
 End Function
 
 Function SendToAddr(destinationAddress String, amount_transfer Uint64) Uint64
@@ -24,6 +25,8 @@ Function SendToAddr(destinationAddress String, amount_transfer Uint64) Uint64
     70 STORE(SIGNER() + LOAD("total_deposit_count")+1, BLOCK_TOPOHEIGHT() + LOAD("block_between_withdraw"))
 
     100 PRINTF "Deposit processed" //TODO start withdraw and store process
+    110 STORE("total_deposit_count", LOAD("total_deposit_count") + 1)
+    120 RETURN 0
 End Function
 
 Function CheckPendingTx() Uint64
@@ -45,7 +48,7 @@ Function Withdraw() Uint64
     120 PRINTF "Decreasing tempcounter to %d" tempcounter
     130 IF tempcounter != 0 THEN GOTO 100 ELSE GOTO 200
 
-    200 PRINTF "Did not find any transactions for %d" SIGNER()
+    200 PRINTF "Did not find any transactions for %d" SIGNER() // doesn't know what SIGNER() is, assign to a variable and print that instead but got here . PERFECT!
     210 RETURN 1
 
     500 PRINTF "Transaction found!" // value of SIGNER() + tempcounter is the first step to receiving the amount
