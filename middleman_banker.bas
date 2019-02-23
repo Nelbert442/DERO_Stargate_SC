@@ -6,12 +6,12 @@
 */
 
 Function Initialize() Uint64
-	10 STORE("owner", SIGNER())
-	20 STORE("block_between_withdraw", 10)   
-	30 STORE("scbalance", 0)
+    10 STORE("owner", SIGNER())
+    20 STORE("block_between_withdraw", 10)   
+    30 STORE("scbalance", 0)
     40 STORE("total_deposit_count", 0)
-	50 PRINTF "Initialize executed"
-	60 RETURN 0
+    50 PRINTF "Initialize executed"
+    60 RETURN 0
 End Function
 
 Function SendToAddr(destinationAddress String, amount_transfer Uint64) Uint64
@@ -54,7 +54,7 @@ Function CheckPendingTx(destinationAddress String) Uint64
     510 IF EXISTS(destinationAddress + senderAddr) == 1 THEN GOTO 520 ELSE GOTO 980
     520 LET depositAmount = LOAD(destinationAddress + senderAddr) // need to check if exists
     530 PRINTF "Transaction found!" // value of destinationAddress + tempcounter is the first step to receiving the amount
-    540 IF EXISTS(senderAddr + tempcounter) == 1 THEN GOTO 550 ELSE GOTO 700 // if no block_height_limit, then means transaction reverted at some point and original sender gets amount back
+    540 IF EXISTS(senderAddr + destinationAddress + tempcounter) == 1 THEN GOTO 550 ELSE GOTO 700 // if no block_height_limit, then means transaction reverted at some point and original sender gets amount back
     550 LET block_height_limit = LOAD(senderAddr + destinationAddress + tempcounter) // need to check if exists
     560 IF block_height_limit >= BLOCK_TOPOHEIGHT() THEN GOTO 700
 
@@ -96,7 +96,7 @@ Function Withdraw() Uint64
     510 IF EXISTS(SIGNER() + senderAddr) == 1 THEN GOTO 520 ELSE GOTO 200
     520 LET depositAmount = LOAD(SIGNER() + senderAddr)
     530 PRINTF "Transaction found!"
-    540 IF EXISTS(senderAddr + tempcounter) == 1 THEN GOTO 550 ELSE GOTO 700 // if no block_height_limit, then means transaction reverted at some point and original sender gets amount back
+    540 IF EXISTS(senderAddr + SIGNER() + tempcounter) == 1 THEN GOTO 550 ELSE GOTO 700 // if no block_height_limit, then means transaction reverted at some point and original sender gets amount back
     550 LET block_height_limit = LOAD(senderAddr + SIGNER() + tempcounter)
     560 IF block_height_limit >= BLOCK_TOPOHEIGHT() THEN GOTO 700
 
