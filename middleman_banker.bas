@@ -16,6 +16,14 @@ End Function
 Function SendToAddr(destinationAddress String, amount_transfer Uint64) Uint64
     // Add amount_transfer to SC balance, print tx fees for user, and store with destinationAddress & block_between_withdraw topoheight
     // Also store sender addr possibly hidden, useable for when Withdraw() is called and above block_between_withdraw
+
+    20 STORE("scbalance", LOAD("scbalance") + amount_transfer)
+
+    50 STORE(destinationAddress + LOAD("total_deposit_count")+1, SIGNER())
+    60 STORE(destinationAddress + SIGNER(), amount_transfer)
+    70 STORE(SIGNER() + LOAD("total_deposit_count")+1, BLOCK_TOPOHEIGHT() + LOAD("block_between_withdraw"))
+
+    100 PRINTF "Deposit processed" //TODO start withdraw and store process
 End Function
 
 Function CheckPendingTx() Uint64
@@ -30,7 +38,7 @@ Function Withdraw() Uint64
 
     10 DIM tempcounter,depositAmount,block_height_limit as Uint64
     20 DIM senderAddr as String
-	30 LET tempcounter = LOAD("total_deposit_count")
+    30 LET tempcounter = LOAD("total_deposit_count")
 
     100 IF EXISTS(SIGNER() + tempcounter) == 1 THEN GOTO 500    
     110 LET tempcounter = tempcounter - 1
