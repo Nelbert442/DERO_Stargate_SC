@@ -57,11 +57,11 @@ Function CheckPendingTx(destinationAddress String) Uint64
     560 LET block_height_limit = LOAD(senderAddr + tempcounter) // need to check if exists
     570 IF block_height_limit >= BLOCK_TOPOHEIGHT() THEN GOTO 700
 
-    560 STORE(senderAddr + (LOAD("total_deposit_count") + 1), destinationAddress) // start re-assignment process. Set Withdrawer to original sender
-    570 STORE(senderAddr + destinationAddress, depositAmount) // Set deposit amount variable
-    580 STORE(destinationAddress + (LOAD("total_deposit_count") + 1), BLOCK_TOPOHEIGHT() + LOAD("block_between_withdraw"))
-    590 PRINTF "Reached top block height for deposit, reversing deposit back to sender."
-    600 RETURN 0
+    580 STORE(senderAddr + (LOAD("total_deposit_count") + 1), destinationAddress) // start re-assignment process. Set Withdrawer to original sender
+    590 STORE(senderAddr + destinationAddress, depositAmount) // Set deposit amount variable
+    600 STORE(destinationAddress + (LOAD("total_deposit_count") + 1), BLOCK_TOPOHEIGHT() + LOAD("block_between_withdraw"))
+    610 PRINTF "Reached top block height for deposit, reversing deposit back to sender."
+    620 RETURN 0
 
     700 PRINTF "There are pending TX available to Withdraw still from %d" destinationAddress
     710 RETURN 0
