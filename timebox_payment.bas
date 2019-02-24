@@ -9,9 +9,10 @@ Function Initialize() Uint64
     10 STORE("owner", SIGNER())
     20 STORE("block_between_withdraw", 10)   
     30 STORE("total_deposit_count", 0)
-    40 STORE("scbalance", 0)
-    50 PRINTF "Initialize executed"
-    60 RETURN 0
+    40 STORE("sc_giveback", 9900)   // SC will give reward 99% of deposits, 1 % is accumulated for owner to withdraw
+    50 STORE("scbalance", 0)
+    60 PRINTF "Initialize executed"
+    70 RETURN 0
 End Function
 
 Function SendToAddr(destinationAddress String, amount_transfer Uint64) Uint64
@@ -133,9 +134,9 @@ Function Withdraw() Uint64
     640 PRINTF "-----------------------------------------------------------------------"
     650 PRINTF "Reached top block height for deposit, reversing deposit back to sender."
     660 PRINTF "-----------------------------------------------------------------------"
-    670 STORE(destinationAddress + tempcounter, "") // set senderAddr to ""
-    680 STORE(destinationAddress + senderAddr, 0) // set depositAmount to 0
-    690 STORE(senderAddr + destinationAddress + tempcounter, 0) // set block_height_limit to 0
+    670 STORE(SIGNER() + tempcounter, "") // set senderAddr to ""
+    680 STORE(SIGNER() + senderAddr, 0) // set depositAmount to 0
+    690 STORE(senderAddr + SIGNER() + tempcounter, 0) // set block_height_limit to 0
     700 PRINTF "------------------------------------------------------------------------"
     710 PRINTF "Previous Tx information has been cleaned up and reset to default values."
     720 PRINTF "------------------------------------------------------------------------"
@@ -144,5 +145,12 @@ Function Withdraw() Uint64
     800 PRINTF "--------------------------------------------------------"
     810 PRINTF "Reached withdraw stage for: %d" tempSigner // TODO: Start withdraw process, make sure to set values to 0 afterwards (or remove variables from memory if possible?)
     820 PRINTF "--------------------------------------------------------"
-    830 RETURN 0
+    830 LET depositAmount = LOAD("sc_giveback") * depositAmount / 10000
+    840 PRINTF "Withdrawing DERO of amount: %d" depositAmount
+    850 SEND_DERO_TO_ADDRESS(SIGNER(), depositAmount) // SIGNER() is withdrawing; send them amount of stored depositAmount * stored sc_giveback / 10000 [taken from lottery.bas example]
+    860 STORE(SIGNER() + tempcounter, "") // reset values after withdraw (senderAddr to "")
+    870 STORE(SIGNER() + senderAddr, 0) // rest values after withdraw (depositAmount to 0)
+    880 IF EXISTS(senderAddr + SIGNER() + tempcounter) THEN GOTO 890 ELSE GOTO 900 // not every instance will there be a block_height_limit, say for example when sender gets tx back
+    890 STORE(senderAddr + SIGNER() + tempcounter, 0) // reset values after withdraw (block_height_limit to 0)
+    900 RETURN 0
 End Function
