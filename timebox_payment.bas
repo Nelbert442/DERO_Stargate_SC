@@ -83,10 +83,10 @@ Function CheckPendingTx(destinationAddress String) Uint64
     700 PRINTF "------------------------------------------------------------------------"
     710 RETURN 0
 
-    790 PRINTF "--------------------------------------------------------"
-    800 PRINTF "There are pending TX available to Withdraw still, run Withdraw() to get them before they time out! For: %d" destinationAddress
-    810 PRINTF "--------------------------------------------------------"
-    820 RETURN 0
+    800 PRINTF "--------------------------------------------------------"
+    810 PRINTF "There are pending TX available to Withdraw still, run Withdraw() to get them before they time out! For: %d" destinationAddress
+    820 PRINTF "--------------------------------------------------------"
+    830 RETURN 0
 End Function
 
 Function Withdraw() Uint64
@@ -141,8 +141,8 @@ Function Withdraw() Uint64
     720 PRINTF "------------------------------------------------------------------------"
     730 RETURN 0
 
-    790 PRINTF "--------------------------------------------------------"
-    800 PRINTF "Reached withdraw stage for: %d" tempSigner // TODO: Start withdraw process, make sure to set values to 0 afterwards (or remove variables from memory if possible?)
-    810 PRINTF "--------------------------------------------------------"
-    820 RETURN 0
+    800 PRINTF "--------------------------------------------------------"
+    810 PRINTF "Reached withdraw stage for: %d" tempSigner // TODO: Start withdraw process, make sure to set values to 0 afterwards (or remove variables from memory if possible?)
+    820 PRINTF "--------------------------------------------------------"
+    830 RETURN 0
 End Function
