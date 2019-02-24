@@ -84,7 +84,7 @@ Function CheckPendingTx(destinationAddress String) Uint64
     590 STORE(senderAddr + destinationAddress + new_deposit_count, depositAmount) // Set deposit amount variable
     // 600 STORE(destinationAddress + senderAddr + new_deposit_count, BLOCK_TOPOHEIGHT() + LOAD("block_between_withdraw")) // do not store a new block height because line 360 will then reach withdraw stage
     // clean up the other transaction information so that you cannot go withdraw after the block height has increased past allotted height
-    610 STORE("total_deposit_count", new_deposit_count)
+    610 LET new_deposit_count = new_deposit_count + 1
     620 PRINTF "-----------------------------------------------------------------------"
     630 PRINTF "Reached top block height for deposit, reversing deposit back to sender."
     640 PRINTF "-----------------------------------------------------------------------"
@@ -105,7 +105,8 @@ Function CheckPendingTx(destinationAddress String) Uint64
     830 LET pending_action = pending_action + 1
     840 GOTO 110 // Go back to loop through finding if any more pending actions are available. Will come back to 850 if tempcounter reaches 0 and pending_action is > 0 [which it will be if pending tx / reversals have taken place]
 
-    850 RETURN 0
+    850 STORE("total_deposit_count", new_deposit_count - 1) // new_deposit_count incremented initially from total_deposit_count, so storing over itself if it never incremented from re-address. If re-address happens, by time exits it'll be 1 more than actual top count so - 1 still works
+    860 RETURN 0
 End Function
 
 Function Withdraw() Uint64
@@ -148,7 +149,7 @@ Function Withdraw() Uint64
     610 STORE(senderAddr + SIGNER() + new_deposit_count, depositAmount) // Set deposit amount variable
     // 620 STORE(SIGNER() + senderAddr + new_deposit_count, BLOCK_TOPOHEIGHT() + LOAD("block_between_withdraw")) // do not store a new block height because line 360 will then reach withdraw stage
     // clean up the other transaction information so that you cannot go withdraw after the block height has increased past allotted height
-    630 STORE("total_deposit_count", new_deposit_count)
+    630 LET new_deposit_count = new_deposit_count + 1
     640 PRINTF "-----------------------------------------------------------------------"
     650 PRINTF "Reached top block height for deposit, reversing deposit back to sender."
     660 PRINTF "-----------------------------------------------------------------------"
@@ -177,5 +178,6 @@ Function Withdraw() Uint64
     920 LET withdraw_action = withdraw_action + 1
     930 GOTO 110 // Go back to loop through finding if any more withdraws are available to perform. Will come back to 940 if tempcounter reaches 0 and withdraw_action is > 0 [which it will be if withdraws / reversals have taken place]
 
-    940 RETURN 0 // exit out location for when a withdraw is performed or when a re-address is performed, withdraw_action is incremented then when tempcounter reaches 0 it'll come down here to exit out and store any values to be stored
+    940 STORE("total_deposit_count", new_deposit_count - 1) // new_deposit_count incremented initially from total_deposit_count, so storing over itself if it never incremented from re-address. If re-address happens, by time exits it'll be 1 more than actual top count so - 1 still works
+    950 RETURN 0 // exit out location for when a withdraw is performed or when a re-address is performed, withdraw_action is incremented then when tempcounter reaches 0 it'll come down here to exit out and store any values to be stored
 End Function
