@@ -27,7 +27,7 @@ Function SendToAddr(destinationAddress String, value Uint64) Uint64
     // Add value to SC balance, print tx fees for user?, and store with destinationAddress & block_between_withdraw topoheight
     // Also store sender addr possibly hidden, useable for when Withdraw() is called and above block_between_withdraw
 
-    10 DIM new_deposit_count, balance as Uint64]
+    10 DIM new_deposit_count, balance as Uint64
     20 LET balance = LOAD("balance") + value
     30 STORE("balance", balance)
     40 LET new_deposit_count = LOAD("total_deposit_count") + 1
