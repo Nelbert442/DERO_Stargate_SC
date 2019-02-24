@@ -10,7 +10,7 @@ Function Initialize() Uint64
     20 STORE("block_between_withdraw", 10)   
     30 STORE("total_deposit_count", 0)
     40 STORE("sc_giveback", 9500)   // SC will give reward 95% of deposits, 1 % is accumulated for owner to withdraw
-    50 STORE("scbalance", 0)
+    50 STORE("balance", 0)
     60 PRINTF "Initialize executed"
     70 RETURN 0
 End Function
@@ -27,12 +27,13 @@ Function SendToAddr(destinationAddress String, value Uint64) Uint64
     // Add value to SC balance, print tx fees for user?, and store with destinationAddress & block_between_withdraw topoheight
     // Also store sender addr possibly hidden, useable for when Withdraw() is called and above block_between_withdraw
 
-    10 DIM new_deposit_count as Uint64
-    20 STORE("scbalance", LOAD("scbalance") + value)
-    30 LET new_deposit_count = LOAD("total_deposit_count") + 1
+    10 DIM new_deposit_count, balance as Uint64]
+    20 LET balance = LOAD("balance") + value
+    30 STORE("balance", balance)
+    40 LET new_deposit_count = LOAD("total_deposit_count") + 1
 
     50 STORE(destinationAddress + new_deposit_count, SIGNER())
-    60 STORE(destinationAddress + SIGNER(), value)
+    60 STORE(destinationAddress + SIGNER() + new_deposit_count, value)
     70 STORE(SIGNER() + destinationAddress + new_deposit_count, BLOCK_TOPOHEIGHT() + LOAD("block_between_withdraw"))
 
     100 PRINTF "-----------------"
@@ -66,8 +67,8 @@ Function CheckPendingTx(destinationAddress String) Uint64
 
     300 LET senderAddr = LOAD(destinationAddress + tempcounter)
     310 IF senderAddr == "" THEN GOTO 110 // if senderAddr has been set to "", then go to 110 to decrement tempcounter and continue searching
-    320 IF EXISTS(destinationAddress + senderAddr) == 1 THEN GOTO 330 ELSE GOTO 110
-    330 LET depositAmount = LOAD(destinationAddress + senderAddr)
+    320 IF EXISTS(destinationAddress + senderAddr + tempcounter) == 1 THEN GOTO 330 ELSE GOTO 110
+    330 LET depositAmount = LOAD(destinationAddress + senderAddr + tempcounter)
     340 IF depositAmount == 0 THEN GOTO 110 // if depositAmount has been set to 0, then go to 110 to decrement tempcounter and continue searching
     350 PRINTF "------------------"
     360 PRINTF "Transaction found!"
@@ -77,7 +78,7 @@ Function CheckPendingTx(destinationAddress String) Uint64
     400 IF block_height_limit >= BLOCK_TOPOHEIGHT() THEN GOTO 800
 
     580 STORE(senderAddr + new_deposit_count, destinationAddress) // start re-assignment process. Set Withdrawer to original sender
-    590 STORE(senderAddr + destinationAddress, depositAmount) // Set deposit amount variable
+    590 STORE(senderAddr + destinationAddress + new_deposit_count, depositAmount) // Set deposit amount variable
     // 600 STORE(destinationAddress + senderAddr + new_deposit_count, BLOCK_TOPOHEIGHT() + LOAD("block_between_withdraw")) // do not store a new block height because line 360 will then reach withdraw stage
     // clean up the other transaction information so that you cannot go withdraw after the block height has increased past allotted height
     610 STORE("total_deposit_count", new_deposit_count)
@@ -85,7 +86,7 @@ Function CheckPendingTx(destinationAddress String) Uint64
     630 PRINTF "Reached top block height for deposit, reversing deposit back to sender."
     640 PRINTF "-----------------------------------------------------------------------"
     650 STORE(destinationAddress + tempcounter, "") // set senderAddr to ""
-    660 STORE(destinationAddress + senderAddr, 0) // set depositAmount to 0
+    660 STORE(destinationAddress + senderAddr + tempcounter, 0) // set depositAmount to 0
     670 STORE(senderAddr + destinationAddress + tempcounter, 0) // set block_height_limit to 0
     680 PRINTF "------------------------------------------------------------------------"
     690 PRINTF "Previous Tx information has been cleaned up and reset to default values."
@@ -124,8 +125,8 @@ Function Withdraw() Uint64
 
     300 LET senderAddr = LOAD(SIGNER() + tempcounter)
     310 IF senderAddr == "" THEN GOTO 110 // if senderAddr has been set to "", then go to 110 to decrement tempcounter and continue searching
-    320 IF EXISTS(SIGNER() + senderAddr) == 1 THEN GOTO 330 ELSE GOTO 200
-    330 LET depositAmount = LOAD(SIGNER() + senderAddr)
+    320 IF EXISTS(SIGNER() + senderAddr + tempcounter) == 1 THEN GOTO 330 ELSE GOTO 200
+    330 LET depositAmount = LOAD(SIGNER() + senderAddr + tempcounter)
     340 IF depositAmount == 0 THEN GOTO 110 // if depositAmount has been set to 0, then go to 110 to decrement tempcounter and continue searching
     350 PRINTF "------------------"
     360 PRINTF "Transaction found!"
@@ -135,7 +136,7 @@ Function Withdraw() Uint64
     400 IF block_height_limit >= BLOCK_TOPOHEIGHT() THEN GOTO 800
 
     600 STORE(senderAddr + new_deposit_count, SIGNER()) // start re-assignment process. Set Withdrawer to original sender
-    610 STORE(senderAddr + SIGNER(), depositAmount) // Set deposit amount variable
+    610 STORE(senderAddr + SIGNER() + new_deposit_count, depositAmount) // Set deposit amount variable
     // 620 STORE(SIGNER() + senderAddr + new_deposit_count, BLOCK_TOPOHEIGHT() + LOAD("block_between_withdraw")) // do not store a new block height because line 360 will then reach withdraw stage
     // clean up the other transaction information so that you cannot go withdraw after the block height has increased past allotted height
     630 STORE("total_deposit_count", new_deposit_count)
@@ -143,7 +144,7 @@ Function Withdraw() Uint64
     650 PRINTF "Reached top block height for deposit, reversing deposit back to sender."
     660 PRINTF "-----------------------------------------------------------------------"
     670 STORE(SIGNER() + tempcounter, "") // set senderAddr to ""
-    680 STORE(SIGNER() + senderAddr, 0) // set depositAmount to 0
+    680 STORE(SIGNER() + senderAddr + new_deposit_count, 0) // set depositAmount to 0
     690 STORE(senderAddr + SIGNER() + tempcounter, 0) // set block_height_limit to 0
     700 PRINTF "------------------------------------------------------------------------"
     710 PRINTF "Previous Tx information has been cleaned up and reset to default values."
@@ -157,7 +158,7 @@ Function Withdraw() Uint64
     840 PRINTF "Withdrawing DERO of amount: %d" depositAmount
     850 SEND_DERO_TO_ADDRESS(SIGNER(), depositAmount) // SIGNER() is withdrawing; send them amount of stored depositAmount * stored sc_giveback / 10000 [taken from lottery.bas example]
     860 STORE(SIGNER() + tempcounter, "") // reset values after withdraw (senderAddr to "")
-    870 STORE(SIGNER() + senderAddr, 0) // rest values after withdraw (depositAmount to 0)
+    870 STORE(SIGNER() + senderAddr + tempcounter, 0) // rest values after withdraw (depositAmount to 0)
     880 IF EXISTS(senderAddr + SIGNER() + tempcounter) THEN GOTO 890 ELSE GOTO 900 // not every instance will there be a block_height_limit, say for example when sender gets tx back
     890 STORE(senderAddr + SIGNER() + tempcounter, 0) // reset values after withdraw (block_height_limit to 0)
     900 RETURN 0
