@@ -9,22 +9,30 @@ Function Initialize() Uint64
     10 STORE("owner", SIGNER())
     20 STORE("block_between_withdraw", 10)   
     30 STORE("total_deposit_count", 0)
-    40 STORE("sc_giveback", 9900)   // SC will give reward 99% of deposits, 1 % is accumulated for owner to withdraw
+    40 STORE("sc_giveback", 9500)   // SC will give reward 95% of deposits, 1 % is accumulated for owner to withdraw
     50 STORE("scbalance", 0)
     60 PRINTF "Initialize executed"
     70 RETURN 0
 End Function
 
-Function SendToAddr(destinationAddress String, amount_transfer Uint64) Uint64
-    // Add amount_transfer to SC balance, print tx fees for user?, and store with destinationAddress & block_between_withdraw topoheight
+Function TuneTimeBoxParameters(block_between_withdraw Uint64, sc_giveback Uint64) Uint64
+	10  IF ADDRESS_RAW(LOAD("owner")) == ADDRESS_RAW(SIGNER()) THEN GOTO 30 
+	20  RETURN 1
+	30  STORE("block_between_withdraw", block_between_withdraw) 
+	40  STORE("sc_giveback", sc_giveback)   
+	50  RETURN 0 
+End Function
+
+Function SendToAddr(destinationAddress String, value Uint64) Uint64
+    // Add value to SC balance, print tx fees for user?, and store with destinationAddress & block_between_withdraw topoheight
     // Also store sender addr possibly hidden, useable for when Withdraw() is called and above block_between_withdraw
 
     10 DIM new_deposit_count as Uint64
-    20 STORE("scbalance", LOAD("scbalance") + amount_transfer)
+    20 STORE("scbalance", LOAD("scbalance") + value)
     30 LET new_deposit_count = LOAD("total_deposit_count") + 1
 
     50 STORE(destinationAddress + new_deposit_count, SIGNER())
-    60 STORE(destinationAddress + SIGNER(), amount_transfer)
+    60 STORE(destinationAddress + SIGNER(), value)
     70 STORE(SIGNER() + destinationAddress + new_deposit_count, BLOCK_TOPOHEIGHT() + LOAD("block_between_withdraw"))
 
     100 PRINTF "-----------------"
@@ -154,3 +162,5 @@ Function Withdraw() Uint64
     890 STORE(senderAddr + SIGNER() + tempcounter, 0) // reset values after withdraw (block_height_limit to 0)
     900 RETURN 0
 End Function
+
+//TODO: getting Recovered in function uint64 underflow wraparound attack; other chat points this to sending more DERO than is available potentially. perhaps issue with deposits etc., need to investigate
