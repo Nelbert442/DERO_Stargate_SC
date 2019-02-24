@@ -27,18 +27,19 @@ Function SendToAddr(destinationAddress String, value Uint64) Uint64
     // Add value to SC balance, print tx fees for user?, and store with destinationAddress & block_between_withdraw topoheight
     // Also store sender addr possibly hidden, useable for when Withdraw() is called and above block_between_withdraw
 
-    10 DIM new_deposit_count, balance as Uint64
+    10 DIM new_deposit_count, balance, block_height_limit as Uint64
     20 LET balance = LOAD("balance") + value
     30 STORE("balance", balance)
     40 LET new_deposit_count = LOAD("total_deposit_count") + 1
+    50 LET block_height_limit = BLOCK_TOPOHEIGHT() + LOAD("block_between_withdraw")
 
-    50 STORE(destinationAddress + new_deposit_count, SIGNER())
-    60 STORE(destinationAddress + SIGNER() + new_deposit_count, value)
-    70 STORE(SIGNER() + destinationAddress + new_deposit_count, BLOCK_TOPOHEIGHT() + LOAD("block_between_withdraw"))
+    60 STORE(destinationAddress + new_deposit_count, SIGNER())
+    70 STORE(destinationAddress + SIGNER() + new_deposit_count, value)
+    80 STORE(SIGNER() + destinationAddress + new_deposit_count, block_height_limit)
 
-    100 PRINTF "-----------------"
-    110 PRINTF "Deposit processed"
-    120 PRINTF "-----------------"
+    100 PRINTF "------------------------------------------------------------------"
+    110 PRINTF "Deposit processed - will revert if not Withdrawn at height %d" block_height_limit
+    120 PRINTF "------------------------------------------------------------------"
     130 STORE("total_deposit_count", new_deposit_count)
     140 RETURN 0
 End Function
@@ -48,11 +49,12 @@ Function CheckPendingTx(destinationAddress String) Uint64
     // If not within block_between_withdraw, then change destinationAddress to Sender Addr (maybe way to store this in SendToAddr and not show in daemon out?)
     // TODO Future: loop back and get all pending Tx, not just the first one that comes up (need todo in withdraw as well)
 
-    10 DIM tempcounter,depositAmount,block_height_limit,new_deposit_count as Uint64
+    10 DIM tempcounter,depositAmount,block_height_limit,new_deposit_count,pending_action as Uint64
     20 DIM senderAddr as String
     30 LET tempcounter = LOAD("total_deposit_count")
     40 IF tempcounter == 0 THEN GOTO 200
     50 LET new_deposit_count = tempcounter + 1
+    60 LET pending_action = 0 // initialize pending_action at 0. If no withdraws take place, it won't be incremented [line 730 & 920] and will continue on to 210 after going to line 200
 
     100 IF EXISTS(destinationAddress + tempcounter) == 1 THEN GOTO 300
     110 IF tempcounter == 0 THEN GOTO 200 // extra check for == 0, shouldn't matter however since I'm GOTO this line in other places, just one more check to be certain
@@ -60,10 +62,11 @@ Function CheckPendingTx(destinationAddress String) Uint64
     130 PRINTF "Decreasing tempcounter to %d" tempcounter
     140 IF tempcounter != 0 THEN GOTO 100 ELSE GOTO 200
 
-    190 PRINTF "--------------------------------------------------------"
-    200 PRINTF "Did not find any transactions for %d" destinationAddress // doesn't know what SIGNER() is, assign to a variable and print that instead but got here . PERFECT!
+    200 IF pending_action > 0 THEN GOTO 850 ELSE GOTO 210
     210 PRINTF "--------------------------------------------------------"
-    220 RETURN 1
+    220 PRINTF "Did not find any additional transactions for %d" destinationAddress // doesn't know what SIGNER() is, assign to a variable and print that instead but got here . PERFECT!
+    230 PRINTF "--------------------------------------------------------"
+    240 RETURN 1
 
     300 LET senderAddr = LOAD(destinationAddress + tempcounter)
     310 IF senderAddr == "" THEN GOTO 110 // if senderAddr has been set to "", then go to 110 to decrement tempcounter and continue searching
@@ -91,26 +94,31 @@ Function CheckPendingTx(destinationAddress String) Uint64
     680 PRINTF "------------------------------------------------------------------------"
     690 PRINTF "Previous Tx information has been cleaned up and reset to default values."
     700 PRINTF "------------------------------------------------------------------------"
-    710 RETURN 0
+    710 LET pending_action = pending_action + 1
+    720 GOTO 110 GOTO 110 // Go back to loop through finding if any more pending actions are available. Will come back to 850 if tempcounter reaches 0 and pending_action is > 0 [which it will be if pending tx / reversals have taken place]
+    // 730 RETURN 0 // not need anymore since we will be going back to 110 then down to 850 for Return 0, keeping commented for few commits
+
 
     800 PRINTF "--------------------------------------------------------"
     810 PRINTF "There are pending TX available to Withdraw still, run Withdraw() to get them before they time out! For: %d" destinationAddress
     820 PRINTF "--------------------------------------------------------"
-    830 RETURN 0
+    830 LET pending_action = pending_action + 1
+    840 GOTO 110 // Go back to loop through finding if any more pending actions are available. Will come back to 850 if tempcounter reaches 0 and pending_action is > 0 [which it will be if pending tx / reversals have taken place]
+
+    850 RETURN 0
 End Function
 
 Function Withdraw() Uint64
     // Withdraw all available (maybe one per Withdraw() call at first then future TODO?), as long as within block_between_withdraw blocks from SendToAddr
     // If not within block_between_withdraw, then change destinationAddress to Sender Addr (maybe way to store this in SendToAddr and not show in daemon out?)
-    // TODO Future: Save ~1% or less for tx fees outside of chain txfees into SC balance
-    // TODO Future: loop back and get all pending Tx, not just the first one that comes up (need todo in CheckPendingTx as well)
 
-    10 DIM tempcounter,depositAmount,block_height_limit,new_deposit_count as Uint64
+    10 DIM tempcounter,depositAmount,block_height_limit,new_deposit_count,withdraw_action as Uint64
     20 DIM senderAddr,tempSigner as String
     30 LET tempcounter = LOAD("total_deposit_count")
     40 LET tempSigner = SIGNER() // just used for Line 200 output
     50 IF tempcounter == 0 THEN GOTO 200
     60 LET new_deposit_count = tempcounter + 1
+    70 LET withdraw_action = 0 // initialize withdraw_action at 0. If no withdraws take place, it won't be incremented [line 730 & 920] and will continue on to 210 after going to line 200
 
     100 IF EXISTS(SIGNER() + tempcounter) == 1 THEN GOTO 300
     110 IF tempcounter == 0 THEN GOTO 200 // extra check for == 0, shouldn't matter however since I'm GOTO this line in other places, just one more check to be certain
@@ -118,10 +126,11 @@ Function Withdraw() Uint64
     130 PRINTF "Decreasing tempcounter to %d" tempcounter
     140 IF tempcounter != 0 THEN GOTO 100 ELSE GOTO 200
 
-    190 PRINTF "--------------------------------------------------------"
-    200 PRINTF "Did not find any transactions for %d" tempSigner // doesn't know what SIGNER() is, assign to a variable and print that instead but got here . PERFECT!
+    200 IF withdraw_action > 0 THEN GOTO 940 ELSE GOTO 210
     210 PRINTF "--------------------------------------------------------"
-    220 RETURN 1
+    220 PRINTF "Did not find any additional transactions for %d" tempSigner // doesn't know what SIGNER() is, assign to a variable and print that instead but got here . PERFECT!
+    230 PRINTF "--------------------------------------------------------"
+    240 RETURN 1
 
     300 LET senderAddr = LOAD(SIGNER() + tempcounter)
     310 IF senderAddr == "" THEN GOTO 110 // if senderAddr has been set to "", then go to 110 to decrement tempcounter and continue searching
@@ -149,19 +158,24 @@ Function Withdraw() Uint64
     700 PRINTF "------------------------------------------------------------------------"
     710 PRINTF "Previous Tx information has been cleaned up and reset to default values."
     720 PRINTF "------------------------------------------------------------------------"
-    730 RETURN 0
+    730 LET withdraw_action = withdraw_action + 1
+    740 GOTO 110 // Go back to loop through finding if any more withdraws are available to perform. Will go to 940 if tempcounter reaches 0 and withdraw_action is > 0 [which it will be if withdraws / reversals have taken place]
+    // 750 RETURN 0 // not need anymore since we will be going back to 110 then down to 940 for Return 0, keeping commented for few commits
 
     800 PRINTF "--------------------------------------------------------"
     810 PRINTF "Reached withdraw stage for: %d" tempSigner // TODO: Start withdraw process, make sure to set values to 0 afterwards (or remove variables from memory if possible?)
     820 PRINTF "--------------------------------------------------------"
     830 LET depositAmount = LOAD("sc_giveback") * depositAmount / 10000
-    840 PRINTF "Withdrawing DERO of amount: %d" depositAmount
-    850 SEND_DERO_TO_ADDRESS(SIGNER(), depositAmount) // SIGNER() is withdrawing; send them amount of stored depositAmount * stored sc_giveback / 10000 [taken from lottery.bas example]
-    860 STORE(SIGNER() + tempcounter, "") // reset values after withdraw (senderAddr to "")
-    870 STORE(SIGNER() + senderAddr + tempcounter, 0) // rest values after withdraw (depositAmount to 0)
-    880 IF EXISTS(senderAddr + SIGNER() + tempcounter) THEN GOTO 890 ELSE GOTO 900 // not every instance will there be a block_height_limit, say for example when sender gets tx back
-    890 STORE(senderAddr + SIGNER() + tempcounter, 0) // reset values after withdraw (block_height_limit to 0)
-    900 RETURN 0
-End Function
+    840 PRINTF "--------------------------------------------------------"
+    850 PRINTF "Withdrawing DERO of amount: %d" depositAmount
+    860 PRINTF "--------------------------------------------------------"
+    870 SEND_DERO_TO_ADDRESS(SIGNER(), depositAmount) // SIGNER() is withdrawing; send them amount of stored depositAmount * stored sc_giveback / 10000 [taken from lottery.bas example]
+    880 STORE(SIGNER() + tempcounter, "") // reset values after withdraw (senderAddr to "")
+    890 STORE(SIGNER() + senderAddr + tempcounter, 0) // rest values after withdraw (depositAmount to 0)
+    900 IF EXISTS(senderAddr + SIGNER() + tempcounter) THEN GOTO 890 ELSE GOTO 900 // not every instance will there be a block_height_limit, say for example when sender gets tx back
+    910 STORE(senderAddr + SIGNER() + tempcounter, 0) // reset values after withdraw (block_height_limit to 0)
+    920 LET withdraw_action = withdraw_action + 1
+    930 GOTO 110 // Go back to loop through finding if any more withdraws are available to perform. Will come back to 940 if tempcounter reaches 0 and withdraw_action is > 0 [which it will be if withdraws / reversals have taken place]
 
-//TODO: getting Recovered in function uint64 underflow wraparound attack; other chat points this to sending more DERO than is available potentially. perhaps issue with deposits etc., need to investigate
+    940 RETURN 0 // exit out location for when a withdraw is performed or when a re-address is performed, withdraw_action is incremented then when tempcounter reaches 0 it'll come down here to exit out and store any values to be stored
+End Function
