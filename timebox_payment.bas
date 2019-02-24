@@ -95,7 +95,7 @@ Function CheckPendingTx(destinationAddress String) Uint64
     690 PRINTF "Previous Tx information has been cleaned up and reset to default values."
     700 PRINTF "------------------------------------------------------------------------"
     710 LET pending_action = pending_action + 1
-    720 GOTO 110 GOTO 110 // Go back to loop through finding if any more pending actions are available. Will come back to 850 if tempcounter reaches 0 and pending_action is > 0 [which it will be if pending tx / reversals have taken place]
+    720 GOTO 110 // Go back to loop through finding if any more pending actions are available. Will come back to 850 if tempcounter reaches 0 and pending_action is > 0 [which it will be if pending tx / reversals have taken place]
     // 730 RETURN 0 // not need anymore since we will be going back to 110 then down to 850 for Return 0, keeping commented for few commits
 
 
