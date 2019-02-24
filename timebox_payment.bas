@@ -100,7 +100,7 @@ Function CheckPendingTx(destinationAddress String) Uint64
 
 
     800 PRINTF "--------------------------------------------------------"
-    810 PRINTF "There are pending TX available to Withdraw still, run Withdraw() to get them before they time out! For: %d" destinationAddress
+    810 PRINTF "There is one or more pending TX available to Withdraw still, run Withdraw() to get them before they expire!"
     820 PRINTF "--------------------------------------------------------"
     830 LET pending_action = pending_action + 1
     840 GOTO 110 // Go back to loop through finding if any more pending actions are available. Will come back to 850 if tempcounter reaches 0 and pending_action is > 0 [which it will be if pending tx / reversals have taken place]
