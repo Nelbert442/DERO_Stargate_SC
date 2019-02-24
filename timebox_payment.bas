@@ -173,7 +173,7 @@ Function Withdraw() Uint64
     870 SEND_DERO_TO_ADDRESS(tempSigner, depositAmount) // SIGNER() is withdrawing; send them amount of stored depositAmount * stored sc_giveback / 10000 [taken from lottery.bas example]
     880 STORE(tempSigner + tempcounter, "") // reset values after withdraw (senderAddr to "")
     890 STORE(tempSigner + senderAddr + tempcounter, 0) // rest values after withdraw (depositAmount to 0)
-    900 IF EXISTS(senderAddr + tempSigner + tempcounter) THEN GOTO 890 ELSE GOTO 900 // not every instance will there be a block_height_limit, say for example when sender gets tx back
+    900 IF EXISTS(senderAddr + tempSigner + tempcounter) THEN GOTO 910 ELSE GOTO 920 // not every instance will there be a block_height_limit, say for example when sender gets tx back
     910 STORE(senderAddr + tempSigner + tempcounter, 0) // reset values after withdraw (block_height_limit to 0)
     920 LET withdraw_action = withdraw_action + 1
     930 GOTO 110 // Go back to loop through finding if any more withdraws are available to perform. Will come back to 940 if tempcounter reaches 0 and withdraw_action is > 0 [which it will be if withdraws / reversals have taken place]
