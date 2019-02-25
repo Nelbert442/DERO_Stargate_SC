@@ -7,9 +7,9 @@
 
 Function Initialize() Uint64
     10 STORE("owner", SIGNER())
-    20 STORE("block_between_withdraw", 10)   
+    20 STORE("block_between_withdraw", 100)   
     30 STORE("total_deposit_count", 0)
-    40 STORE("sc_giveback", 9500)   // SC will give reward 95% of deposits, 1 % is accumulated for owner to withdraw
+    40 STORE("sc_giveback", 9900)   // SC will give reward 95% of deposits, 1 % is accumulated for owner to withdraw
     50 STORE("balance", 0)
     60 PRINTF "Initialize executed"
     70 RETURN 0
