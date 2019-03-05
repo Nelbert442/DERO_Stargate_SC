@@ -27,27 +27,52 @@ Function SendToAddr(destinationAddress String, value Uint64) Uint64
     // Add value to SC balance, print tx fees for user?, and store with destinationAddress & block_between_withdraw topoheight
     // Also store sender addr possibly hidden, useable for when Withdraw() is called and above block_between_withdraw
 
-    10 DIM new_deposit_count, balance, block_height_limit as Uint64
-    20 LET balance = LOAD("balance") + value
-    30 STORE("balance", balance)
-    40 LET new_deposit_count = LOAD("total_deposit_count") + 1
-    50 LET block_height_limit = BLOCK_TOPOHEIGHT() + LOAD("block_between_withdraw")
+    10 DIM new_deposit_count, balance, block_height_limit, tempcounter as Uint64
+    20 DIM senderAddr as String
+    30 IF IS_ADDRESS_VALID(destinationAddress) THEN GOTO 40 ELSE GOTO 500 // check to ensure entered destinationAddress is valid
+    40 LET balance = LOAD("balance") + value
+    50 STORE("balance", balance)
+    60 LET new_deposit_count = LOAD("total_deposit_count") + 1
+    70 LET block_height_limit = BLOCK_TOPOHEIGHT() + LOAD("block_between_withdraw")
+    80 LET tempcounter = new_deposit_count
+    90 LET senderAddr = SIGNER()
 
-    60 STORE(destinationAddress + new_deposit_count, SIGNER())
-    70 STORE(destinationAddress + SIGNER() + new_deposit_count, value)
-    80 STORE(SIGNER() + destinationAddress + new_deposit_count, block_height_limit)
+    100 IF EXISTS(senderAddr + destinationAddress + tempcounter) == 1 THEN GOTO 300 ELSE GOTO 110 // if exists, go to 300 and reject deposit because deposit is already submitted for this block_height_limit [NOTE: This could pose issues if TuneTimeBoxParameters() was ran and vals are similar, possibly, though rare (need testing to see if loophole is avail)]
+    110 IF tempcounter == 0 THEN GOTO 170 // extra check for == 0, shouldn't matter however since I'm GOTO this line in other places, just one more check to be certain
+    120 LET tempcounter = tempcounter - 1
+    130 PRINTF "------------------------------------------------------------------"
+    140 PRINTF "Searching for duplicate Transactions at this blockheight: %d left" tempcounter
+    150 PRINTF "------------------------------------------------------------------"
+    160 IF tempcounter != 0 THEN GOTO 100 ELSE GOTO 170
 
-    100 PRINTF "------------------------------------------------------------------"
-    110 PRINTF "Deposit processed - will revert if not Withdrawn at height %d" block_height_limit
-    120 PRINTF "------------------------------------------------------------------"
-    130 STORE("total_deposit_count", new_deposit_count)
-    140 RETURN 0
+    170 STORE(destinationAddress + new_deposit_count, senderAddr)
+    180 STORE(destinationAddress + senderAddr + new_deposit_count, value)
+    190 STORE(senderAddr + destinationAddress + new_deposit_count, block_height_limit)
+
+    200 PRINTF "------------------------------------------------------------------"
+    210 PRINTF "Deposit processed - will revert if not Withdrawn at height %d" block_height_limit
+    220 PRINTF "------------------------------------------------------------------"
+    230 STORE("total_deposit_count", new_deposit_count)
+    240 RETURN 0
+
+    300 IF LOAD(senderAddr + destinationAddress + tempcounter) == block_height_limit THEN GOTO 350 ELSE GOTO 110 // since it exists, check to see if values are equal. If not go back and keep looping down, else return rejected and 1
+
+    350 PRINTF "------------------------------------------------------------------"
+    360 PRINTF "Deposit rejected - Deposit already found that ends at %d, try again in at least 1 block (~12s)" block_height_limit
+    370 PRINTF "------------------------------------------------------------------"
+    380 STORE("total_deposit_count", new_deposit_count)
+    390 RETURN 1
+
+    500 PRINTF "------------------------------------------------------------------"
+    510 PRINTF "Deposit rejected - supplied destinationAddress is not valid. Please check parameters and try again."
+    520 PRINTF "------------------------------------------------------------------"
+    530 RETURN 1
 End Function
 
 Function CheckPendingTx(destinationAddress String) Uint64
     // Check any pending Tx being sent for withdraw, similar code to use in Withdraw and SendToAddr, however this just returns value via printF or change Function output to string and swaps if necessary
     // If not within block_between_withdraw, then change destinationAddress to Sender Addr (maybe way to store this in SendToAddr and not show in daemon out?)
-    // TODO Future: loop back and get all pending Tx, not just the first one that comes up (need todo in withdraw as well)
+    // TODO? : validate entered destinationAddress, as done in SendToAddr. Not completely necessary as technically returns will just not be any TX and will move. on But could help processing times etc. if skipping unnecessary loading etc. for DVM?
 
     10 DIM tempcounter,depositAmount,block_height_limit,new_deposit_count,pending_action as Uint64
     20 DIM senderAddr as String
