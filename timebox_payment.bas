@@ -1,22 +1,23 @@
-/* General Idea
-    Address 1 --> SC --> Address 2
-    When address 1 sends to SC, place hold on amount for Address 2 and X number of blocks that it will hold withdrawable balance until the address gets flipped back to address 1
-    Addresses can request status, maybe 'pending' transactions from x address? should sender address be shown? Idk, kinda defeats purpose, maybe just simple response but SC knows sender/receiver somehow?
-    When address requests to withdraw, check to ensure within block holding limit, some stored value upon deposit, and then send to address (maybe withhold 1% for tx fee on SC side? or just send it for now and figure out fees later, prob easiest)
+/*  TimeBox Payments Smart Contract in DVM-BASIC
+    Send "time"-based or "block"-based transactions which can be Withdrawn within that allotted time or block count.
+    However, if the 2nd party does not withdraw the sent balance, then the originating party can then re-withdraw the balance back (with slight fee based on sc_giveback for processing) at any time.
+
+    Author: Nelbert442
+    Media Handles: @Nelbert442
 */
 
 Function Initialize() Uint64
     10 STORE("owner", SIGNER())
     20 STORE("block_between_withdraw", 100)   
     30 STORE("total_deposit_count", 0)
-    40 STORE("sc_giveback", 9900)   // SC will give reward 95% of deposits, 1 % is accumulated for owner to withdraw
+    40 STORE("sc_giveback", 9900)   // SC will give reward 99% of deposits, 1 % is accumulated for owner to withdraw as well as SC to keep for processing fees etc.
     50 STORE("balance", 0)
     60 PRINTF "Initialize executed"
     70 RETURN 0
 End Function
 
 Function TuneTimeBoxParameters(block_between_withdraw Uint64, sc_giveback Uint64) Uint64
-	10  IF ADDRESS_RAW(LOAD("owner")) == ADDRESS_RAW(SIGNER()) THEN GOTO 30 
+	10  IF ADDRESS_RAW(LOAD("owner")) == ADDRESS_RAW(SIGNER()) THEN GOTO 30 // Validate owner is one calling this function, otherwise return 1
 	20  RETURN 1
 	30  STORE("block_between_withdraw", block_between_withdraw) 
 	40  STORE("sc_giveback", sc_giveback)   
@@ -24,8 +25,7 @@ Function TuneTimeBoxParameters(block_between_withdraw Uint64, sc_giveback Uint64
 End Function
 
 Function SendToAddr(destinationAddress String, value Uint64) Uint64
-    // Add value to SC balance, print tx fees for user?, and store with destinationAddress & block_between_withdraw topoheight
-    // Also store sender addr possibly hidden, useable for when Withdraw() is called and above block_between_withdraw
+    // Add value to SC balance, and store values based off of destinationAddress, SIGNER() and block_between_withdraw topoheight
 
     10 DIM new_deposit_count, balance, block_height_limit, tempcounter as Uint64
     20 DIM senderAddr as String
@@ -35,10 +35,10 @@ Function SendToAddr(destinationAddress String, value Uint64) Uint64
     60 LET new_deposit_count = LOAD("total_deposit_count") + 1
     70 LET block_height_limit = BLOCK_TOPOHEIGHT() + LOAD("block_between_withdraw")
     80 LET tempcounter = new_deposit_count
-    90 LET senderAddr = SIGNER()
+    90 LET senderAddr = SIGNER() // To prevent cost of processing and load times
 
     100 IF EXISTS(senderAddr + destinationAddress + tempcounter) == 1 THEN GOTO 300 ELSE GOTO 110 // if exists, go to 300 and reject deposit because deposit is already submitted for this block_height_limit [NOTE: This could pose issues if TuneTimeBoxParameters() was ran and vals are similar, possibly, though rare (need testing to see if loophole is avail)]
-    110 IF tempcounter == 0 THEN GOTO 170 // extra check for == 0, shouldn't matter however since I'm GOTO this line in other places, just one more check to be certain
+    110 IF tempcounter == 0 THEN GOTO 170 // extra check for == 0, just one more check to be certain
     120 LET tempcounter = tempcounter - 1
     130 PRINTF "------------------------------------------------------------------"
     140 PRINTF "Searching for duplicate Transactions at this blockheight: %d left" tempcounter
@@ -71,25 +71,25 @@ End Function
 
 Function CheckPendingTx(destinationAddress String) Uint64
     // Check any pending Tx being sent for withdraw, similar code to use in Withdraw and SendToAddr, however this just returns value via printF or change Function output to string and swaps if necessary
-    // If not within block_between_withdraw, then change destinationAddress to Sender Addr (maybe way to store this in SendToAddr and not show in daemon out?)
-    // TODO? : validate entered destinationAddress, as done in SendToAddr. Not completely necessary as technically returns will just not be any TX and will move. on But could help processing times etc. if skipping unnecessary loading etc. for DVM?
+    // If not within block_between_withdraw, then change destinationAddress to Sender Addr
 
     10 DIM tempcounter,depositAmount,block_height_limit,new_deposit_count,pending_action as Uint64
     20 DIM senderAddr as String
-    30 LET tempcounter = LOAD("total_deposit_count")
-    40 IF tempcounter == 0 THEN GOTO 200
-    50 LET new_deposit_count = tempcounter + 1
-    60 LET pending_action = 0 // initialize pending_action at 0. If no withdraws take place, it won't be incremented [line 730 & 920] and will continue on to 210 after going to line 200
+    30 IF IS_ADDRESS_VALID(destinationAddress) THEN GOTO 40 ELSE GOTO 900 // check to ensure entered destinationAddress is valid
+    40 LET tempcounter = LOAD("total_deposit_count")
+    50 IF tempcounter == 0 THEN GOTO 200
+    60 LET new_deposit_count = tempcounter + 1
+    70 LET pending_action = 0 // initialize pending_action at 0. If no withdraws take place, it won't be incremented [line 710 & 830] and will continue on to 210 after going to line 200
 
     100 IF EXISTS(destinationAddress + tempcounter) == 1 THEN GOTO 300
-    110 IF tempcounter == 0 THEN GOTO 200 // extra check for == 0, shouldn't matter however since I'm GOTO this line in other places, just one more check to be certain
+    110 IF tempcounter == 0 THEN GOTO 200 // extra check for == 0, just one more check to be certain
     120 LET tempcounter = tempcounter - 1
     130 PRINTF "Decreasing tempcounter to %d" tempcounter
     140 IF tempcounter != 0 THEN GOTO 100 ELSE GOTO 200
 
     200 IF pending_action > 0 THEN GOTO 850 ELSE GOTO 210
     210 PRINTF "--------------------------------------------------------"
-    220 PRINTF "Did not find any additional transactions for %d" destinationAddress // doesn't know what SIGNER() is, assign to a variable and print that instead but got here . PERFECT!
+    220 PRINTF "Did not find any additional transactions for %d" destinationAddress
     230 PRINTF "--------------------------------------------------------"
     240 RETURN 1
 
@@ -123,7 +123,6 @@ Function CheckPendingTx(destinationAddress String) Uint64
     720 GOTO 110 // Go back to loop through finding if any more pending actions are available. Will come back to 850 if tempcounter reaches 0 and pending_action is > 0 [which it will be if pending tx / reversals have taken place]
     // 730 RETURN 0 // not need anymore since we will be going back to 110 then down to 850 for Return 0, keeping commented for few commits
 
-
     800 PRINTF "--------------------------------------------------------"
     810 PRINTF "There is one or more pending TX available to Withdraw still, run Withdraw() to get them before they expire!"
     820 PRINTF "--------------------------------------------------------"
@@ -132,11 +131,16 @@ Function CheckPendingTx(destinationAddress String) Uint64
 
     850 STORE("total_deposit_count", new_deposit_count - 1) // new_deposit_count incremented initially from total_deposit_count, so storing over itself if it never incremented from re-address. If re-address happens, by time exits it'll be 1 more than actual top count so - 1 still works
     860 RETURN 0
+
+    900 PRINTF "------------------------------------------------------------------"
+    910 PRINTF "Function rejected - supplied destinationAddress is not valid. Please check parameters and try again."
+    920 PRINTF "------------------------------------------------------------------"
+    930 RETURN 1
 End Function
 
 Function Withdraw() Uint64
-    // Withdraw all available (maybe one per Withdraw() call at first then future TODO?), as long as within block_between_withdraw blocks from SendToAddr
-    // If not within block_between_withdraw, then change destinationAddress to Sender Addr (maybe way to store this in SendToAddr and not show in daemon out?)
+    // Withdraw all available, as long as within block_between_withdraw blocks from SendToAddr
+    // If not within block_between_withdraw, then change destinationAddress to Sender Addr
 
     10 DIM tempcounter,depositAmount,block_height_limit,new_deposit_count,withdraw_action as Uint64
     20 DIM senderAddr,tempSigner as String
@@ -147,14 +151,14 @@ Function Withdraw() Uint64
     70 LET withdraw_action = 0 // initialize withdraw_action at 0. If no withdraws take place, it won't be incremented [line 730 & 920] and will continue on to 210 after going to line 200
 
     100 IF EXISTS(tempSigner + tempcounter) == 1 THEN GOTO 300
-    110 IF tempcounter == 0 THEN GOTO 200 // extra check for == 0, shouldn't matter however since I'm GOTO this line in other places, just one more check to be certain
+    110 IF tempcounter == 0 THEN GOTO 200 // extra check for == 0, just one more check to be certain
     120 LET tempcounter = tempcounter - 1
     130 PRINTF "Decreasing tempcounter to %d" tempcounter
     140 IF tempcounter != 0 THEN GOTO 100 ELSE GOTO 200
 
     200 IF withdraw_action > 0 THEN GOTO 940 ELSE GOTO 210
     210 PRINTF "--------------------------------------------------------"
-    220 PRINTF "Did not find any additional transactions for %d" tempSigner // doesn't know what SIGNER() is, assign to a variable and print that instead but got here . PERFECT!
+    220 PRINTF "Did not find any additional transactions for %d" tempSigner // doesn't know what SIGNER() is, assign to a variable and print that instead, helps with processing times / loads as well
     230 PRINTF "--------------------------------------------------------"
     240 RETURN 1
 
