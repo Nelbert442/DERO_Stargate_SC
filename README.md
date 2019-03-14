@@ -39,6 +39,41 @@ In this example, you can see that block_between_withdraw is being set to 150 blo
 curl -X POST http://127.0.0.1:30309/json_rpc -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":"0","method":"transfer_split","params":{"mixin":5,"get_tx_key":true,"sc_tx":{"entrypoint":"TuneTimeBoxParameters","scid":"5eb714a6c378303d13e93a1cce9c036f7d5bdb340319bf6e27d900444ed5a797", "params":{ "block_between_withdraw":"150", "sc_giveback":"9500" } }}}"'
 ```
 
+## ValidateBalance.bas
+Use Validate Balance to allow for you (the owner) to deposit/withdraw DERO from and 3rd parties (others) to view TXIDs and Balance totals via RPC call. This SC is intended to be utilized in the form of a public wallet so to speak, this way there is no question or FUD related to TXIDs or Balance remaining in a given address.
+
+NOTE: If you are not the owner of the SC, and you perform a Deposit() or Withdraw(), you will be denied. Non-owners can run ViewBalance() and ListTXIDs().
+
+### Initialize Contract (initializes SC and makes you, the SIGNER(), the owner)
+
+```
+curl --request POST --data-binary @ValidateBalance.bas http://127.0.0.1:30309/install_sc
+```
+
+### e.x.1 (Deposit 10 DERO): 
+```
+curl -X POST http://127.0.0.1:30309/json_rpc -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":"0","method":"transfer_split","params":{"mixin":5,"get_tx_key":true,"sc_tx":{"entrypoint":"Deposit","scid":"f4518c6e89f3c5cbbb495e57bdc478fffdaf1fc0d418a7bb4ec25492362af89c", "value":10000000000000 }}}"'
+
+http://pool.dero.io:8080/tx/9ce0725112640d0b959b93b81560d351c7a54b5139facc4551ab2296d3f2e0eb
+```
+
+### e.x.2 (Withdraw 1 DERO):
+```
+curl -X POST http://127.0.0.1:30309/json_rpc -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":"0","method":"transfer_split","params":{"mixin":5,"get_tx_key":true,"sc_tx":{"entrypoint":"Withdraw","scid":"f4518c6e89f3c5cbbb495e57bdc478fffdaf1fc0d418a7bb4ec25492362af89c", "params":{ "amount":"1000000000000" } }}}"'
+
+http://pool.dero.io:8080/tx/a71389f7c954f07997f92b5ce950e4ddf818cb0dac6ccdb0327acf69ba43156b
+```
+
+### e.x.3 (View Balance)
+```
+curl -X POST http://127.0.0.1:30309/json_rpc -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":"0","method":"transfer_split","params":{"mixin":5,"get_tx_key":true,"sc_tx":{"entrypoint":"ViewBalance","scid":"f4518c6e89f3c5cbbb495e57bdc478fffdaf1fc0d418a7bb4ec25492362af89c" }}}"'
+```
+
+### e.x.4 (List TXIDs)
+```
+curl -X POST http://127.0.0.1:30309/json_rpc -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":"0","method":"transfer_split","params":{"mixin":5,"get_tx_key":true,"sc_tx":{"entrypoint":"ListTXIDs","scid":"f4518c6e89f3c5cbbb495e57bdc478fffdaf1fc0d418a7bb4ec25492362af89c" }}}"'
+```
+
 ## IsAddressValid.bas
 Simple .bas file that you can run function IsAddressValid with supplied 'address' string and return is whether or not it is valid by checking aginst built-in command "IS_ADDRESS_VALID()"
 
