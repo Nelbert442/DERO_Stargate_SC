@@ -242,7 +242,7 @@ End Function
 Function WithdrawFees(amount Uint64) Uint64 
 	10 DIM total_fees_to_withdraw, total_fees_to_withdraw_updated as Uint64
 	20 LET total_fees_to_withdraw = LOAD("total_fees_to_withdraw")
-	30 IF total_fees_to_withdraw < amount THEN GOTO 90
+	30 IF total_fees_to_withdraw <= amount THEN GOTO 90
 	40 IF ADDRESS_RAW(LOAD("owner")) != ADDRESS_RAW(SIGNER()) THEN GOTO 90 
 
 	50 SEND_DERO_TO_ADDRESS(SIGNER(),amount)
