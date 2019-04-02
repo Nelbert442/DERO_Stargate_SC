@@ -7,7 +7,7 @@ This will accomplish the use case for sending "time"-based or "block"-based tran
 Send a timed payment [50 DERO] to an address - default Initialization() block_between_withdraw is 100 blocks
 
 ```
-curl -X POST http://127.0.0.1:30309/json_rpc -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":"0","method":"transfer_split","params":{"mixin":5,"get_tx_key":true,"sc_tx":{"entrypoint":"SendToAddr","scid":"5eb714a6c378303d13e93a1cce9c036f7d5bdb340319bf6e27d900444ed5a797", "value":50000000000000, "params":{ "destinationAddress":"dETomkr9SDU6ALJHP3NW4p9fA67RJJJQH3Lj9q6UioyfTUrheVQcdL3Yacw1KjrVyvEuqbwX3k1p1A9dzzZGZvNu8e2TMrLP3r" } }}}"'
+curl -X POST http://127.0.0.1:30309/json_rpc -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":"0","method":"transfer_split","params":{"mixin":5,"get_tx_key":true,"sc_tx":{"entrypoint":"SendToAddr","scid":"a49b1ac71e8ee35c9d1db3b258dcbb61f72ba5b3b2a87f060b0c7e17940b7b8a", "value":50000000000000, "params":{ "destinationAddress":"dETomkr9SDU6ALJHP3NW4p9fA67RJJJQH3Lj9q6UioyfTUrheVQcdL3Yacw1KjrVyvEuqbwX3k1p1A9dzzZGZvNu8e2TMrLP3r" } }}}"'
 ```
 
 ### e.x.2 (CheckPendingTx() - Checking in on the transaction state)
@@ -17,7 +17,7 @@ With a specified destinationAddress, you can check in on the state of the transf
 3) You will get a message that the maximum block has been reached and the TX is being redirected back to the sender. You will get this if you reach the block_between_withdraw block, as stated in e.x.1, and the transaction automatically gets sent back to the sender (who can withdraw the balance at any time, as there is no block height set for withdraw in this scenario, since it is being returned)
 
 ```
-curl -X POST http://127.0.0.1:30309/json_rpc -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":"0","method":"transfer_split","params":{"mixin":5,"get_tx_key":true,"sc_tx":{"entrypoint":"CheckPendingTx","scid":"5eb714a6c378303d13e93a1cce9c036f7d5bdb340319bf6e27d900444ed5a797", "params":{ "destinationAddress":"dETomkr9SDU6ALJHP3NW4p9fA67RJJJQH3Lj9q6UioyfTUrheVQcdL3Yacw1KjrVyvEuqbwX3k1p1A9dzzZGZvNu8e2TMrLP3r" } }}}"'
+curl -X POST http://127.0.0.1:30309/json_rpc -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":"0","method":"transfer_split","params":{"mixin":5,"get_tx_key":true,"sc_tx":{"entrypoint":"CheckPendingTx","scid":"a49b1ac71e8ee35c9d1db3b258dcbb61f72ba5b3b2a87f060b0c7e17940b7b8a", "params":{ "destinationAddress":"dETomkr9SDU6ALJHP3NW4p9fA67RJJJQH3Lj9q6UioyfTUrheVQcdL3Yacw1KjrVyvEuqbwX3k1p1A9dzzZGZvNu8e2TMrLP3r" } }}}"'
 ```
 
 ### e.x.3 (Withdraw())
@@ -25,7 +25,7 @@ You will assume similar processes as CheckPendingTx() however you, as the SIGNER
 The one difference here is upon there being pending TX to withdraw, you then perform a withdraw and get the DERO sent to you, with a small fee taken out for SC processing (fees etc.) and this value is by default 1% of DERO sent.
 
 ```
-curl -X POST http://127.0.0.1:30309/json_rpc -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":"0","method":"transfer_split","params":{"mixin":5,"get_tx_key":true,"sc_tx":{"entrypoint":"Withdraw","scid":"5eb714a6c378303d13e93a1cce9c036f7d5bdb340319bf6e27d900444ed5a797" }}}"'
+curl -X POST http://127.0.0.1:30309/json_rpc -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":"0","method":"transfer_split","params":{"mixin":5,"get_tx_key":true,"sc_tx":{"entrypoint":"Withdraw","scid":"a49b1ac71e8ee35c9d1db3b258dcbb61f72ba5b3b2a87f060b0c7e17940b7b8a" }}}"'
 ```
 
 ### e.x.4 (TuneTimeBoxParameters())
@@ -36,7 +36,7 @@ sc_giveback: This is defining a percentage that the SC is giving to the Withdraw
 
 In this example, you can see that block_between_withdraw is being set to 150 blocks and sc_giveback is being set to 95% given back to the Withdrawer, keeping 5% for the SC.
 ```
-curl -X POST http://127.0.0.1:30309/json_rpc -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":"0","method":"transfer_split","params":{"mixin":5,"get_tx_key":true,"sc_tx":{"entrypoint":"TuneTimeBoxParameters","scid":"5eb714a6c378303d13e93a1cce9c036f7d5bdb340319bf6e27d900444ed5a797", "params":{ "block_between_withdraw":"150", "sc_giveback":"9500" } }}}"'
+curl -X POST http://127.0.0.1:30309/json_rpc -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":"0","method":"transfer_split","params":{"mixin":5,"get_tx_key":true,"sc_tx":{"entrypoint":"TuneTimeBoxParameters","scid":"a49b1ac71e8ee35c9d1db3b258dcbb61f72ba5b3b2a87f060b0c7e17940b7b8a", "params":{ "block_between_withdraw":"150", "sc_giveback":"9500" } }}}"'
 ```
 
 ## ValidateBalance.bas
