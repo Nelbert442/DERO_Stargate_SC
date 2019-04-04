@@ -54,14 +54,14 @@ curl --request POST --data-binary @ValidateBalance.bas http://127.0.0.1:30309/in
 ```
 curl -X POST http://127.0.0.1:30309/json_rpc -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":"0","method":"transfer_split","params":{"mixin":5,"get_tx_key":true,"sc_tx":{"entrypoint":"Deposit","scid":"d37f1c1b48c9bc180bfe635662352a2fc18ee3c054648294c1b757ef867541dd", "value":10000000000000 }}}"'
 
-http://pool.dero.io:8080/tx/9ce0725112640d0b959b93b81560d351c7a54b5139facc4551ab2296d3f2e0eb
+http://pool.dero.io:8080/tx/9daa457e1fc36f3329011d5c22dfcd27910f4b02c0943ef07cda8d78faf1bcc4
 ```
 
 ### e.x.2 (Withdraw 1 DERO):
 ```
 curl -X POST http://127.0.0.1:30309/json_rpc -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":"0","method":"transfer_split","params":{"mixin":5,"get_tx_key":true,"sc_tx":{"entrypoint":"Withdraw","scid":"d37f1c1b48c9bc180bfe635662352a2fc18ee3c054648294c1b757ef867541dd", "params":{ "amount":"1000000000000" } }}}"'
 
-http://pool.dero.io:8080/tx/a71389f7c954f07997f92b5ce950e4ddf818cb0dac6ccdb0327acf69ba43156b
+http://pool.dero.io:8080/tx/34101b5431473a4c7aa7ee9dcc0f6d2b8b55af183c4747591dd97ca5974392de
 ```
 
 ### e.x.3 (View Balance)
