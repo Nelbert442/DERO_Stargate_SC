@@ -52,26 +52,26 @@ curl --request POST --data-binary @ValidateBalance.bas http://127.0.0.1:30309/in
 
 ### e.x.1 (Deposit 10 DERO): 
 ```
-curl -X POST http://127.0.0.1:30309/json_rpc -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":"0","method":"transfer_split","params":{"mixin":5,"get_tx_key":true,"sc_tx":{"entrypoint":"Deposit","scid":"f4518c6e89f3c5cbbb495e57bdc478fffdaf1fc0d418a7bb4ec25492362af89c", "value":10000000000000 }}}"'
+curl -X POST http://127.0.0.1:30309/json_rpc -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":"0","method":"transfer_split","params":{"mixin":5,"get_tx_key":true,"sc_tx":{"entrypoint":"Deposit","scid":"d37f1c1b48c9bc180bfe635662352a2fc18ee3c054648294c1b757ef867541dd", "value":10000000000000 }}}"'
 
 http://pool.dero.io:8080/tx/9ce0725112640d0b959b93b81560d351c7a54b5139facc4551ab2296d3f2e0eb
 ```
 
 ### e.x.2 (Withdraw 1 DERO):
 ```
-curl -X POST http://127.0.0.1:30309/json_rpc -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":"0","method":"transfer_split","params":{"mixin":5,"get_tx_key":true,"sc_tx":{"entrypoint":"Withdraw","scid":"f4518c6e89f3c5cbbb495e57bdc478fffdaf1fc0d418a7bb4ec25492362af89c", "params":{ "amount":"1000000000000" } }}}"'
+curl -X POST http://127.0.0.1:30309/json_rpc -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":"0","method":"transfer_split","params":{"mixin":5,"get_tx_key":true,"sc_tx":{"entrypoint":"Withdraw","scid":"d37f1c1b48c9bc180bfe635662352a2fc18ee3c054648294c1b757ef867541dd", "params":{ "amount":"1000000000000" } }}}"'
 
 http://pool.dero.io:8080/tx/a71389f7c954f07997f92b5ce950e4ddf818cb0dac6ccdb0327acf69ba43156b
 ```
 
 ### e.x.3 (View Balance)
 ```
-curl -X POST http://127.0.0.1:30309/json_rpc -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":"0","method":"transfer_split","params":{"mixin":5,"get_tx_key":true,"sc_tx":{"entrypoint":"ViewBalance","scid":"f4518c6e89f3c5cbbb495e57bdc478fffdaf1fc0d418a7bb4ec25492362af89c" }}}"'
+curl -X POST http://127.0.0.1:30309/json_rpc -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":"0","method":"transfer_split","params":{"mixin":5,"get_tx_key":true,"sc_tx":{"entrypoint":"ViewBalance","scid":"d37f1c1b48c9bc180bfe635662352a2fc18ee3c054648294c1b757ef867541dd" }}}"'
 ```
 
 ### e.x.4 (List TXIDs)
 ```
-curl -X POST http://127.0.0.1:30309/json_rpc -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":"0","method":"transfer_split","params":{"mixin":5,"get_tx_key":true,"sc_tx":{"entrypoint":"ListTXIDs","scid":"f4518c6e89f3c5cbbb495e57bdc478fffdaf1fc0d418a7bb4ec25492362af89c" }}}"'
+curl -X POST http://127.0.0.1:30309/json_rpc -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":"0","method":"transfer_split","params":{"mixin":5,"get_tx_key":true,"sc_tx":{"entrypoint":"ListTXIDs","scid":"d37f1c1b48c9bc180bfe635662352a2fc18ee3c054648294c1b757ef867541dd" }}}"'
 ```
 
 ## IsAddressValid.bas
