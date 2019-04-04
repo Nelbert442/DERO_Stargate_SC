@@ -33,6 +33,7 @@ End Function
 Function Deposit(value Uint64) Uint64
 	10 DIM balance, tempcounter as Uint64
     11 DIM txid as String
+    15 IF value == 0 THEN GOTO 110  // if value is 0, simply return
     20 IF ADDRESS_RAW(LOAD("owner")) == ADDRESS_RAW(SIGNER()) THEN GOTO 50
     25 PRINTF "----------------------------------------------------------------------"
     30 PRINTF "You are not the owner of this SCID and therefore cannot deposit funds."
@@ -54,6 +55,7 @@ End Function
 Function Withdraw(amount Uint64) Uint64
     10 DIM balance, balance_updated, tempcounter as Uint64
     11 DIM txid as String
+    15 IF amount == 0 THEN GOTO 170  // if amount is 0, simply return
     20 IF ADDRESS_RAW(LOAD("owner")) == ADDRESS_RAW(SIGNER()) THEN GOTO 50
     25 PRINTF "-----------------------------------------------------------------------"
     30 PRINTF "You are not the owner of this SCID and therefore cannot withdraw funds."

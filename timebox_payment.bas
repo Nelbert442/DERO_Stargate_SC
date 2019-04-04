@@ -50,6 +50,7 @@ Function SendToAddr(destinationAddress String, value Uint64) Uint64
 
     10 DIM new_deposit_count, balance, block_height_limit, tempcounter as Uint64
     20 DIM senderAddr,txid as String
+    25 IF value == 0 THEN GOTO 240  // if value is 0, simply return
     30 IF IS_ADDRESS_VALID(destinationAddress) THEN GOTO 40 ELSE GOTO 500 // check to ensure entered destinationAddress is valid
     40 LET new_deposit_count = LOAD("total_deposit_count") + 1
     50 LET block_height_limit = BLOCK_TOPOHEIGHT() + LOAD("block_between_withdraw")
@@ -241,6 +242,7 @@ End Function
 
 Function WithdrawFees(amount Uint64) Uint64 
 	10 DIM total_fees_to_withdraw, total_fees_to_withdraw_updated as Uint64
+    15 IF amount == 0 THEN GOTO 80  // if amount is 0, simply return
 	20 LET total_fees_to_withdraw = LOAD("total_fees_to_withdraw")
 	30 IF total_fees_to_withdraw <= amount THEN GOTO 90
 	40 IF ADDRESS_RAW(LOAD("owner")) != ADDRESS_RAW(SIGNER()) THEN GOTO 90 
