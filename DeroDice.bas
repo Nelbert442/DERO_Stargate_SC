@@ -28,6 +28,15 @@ Function Initialize() Uint64
     70 RETURN 0
 End Function
 
+Function TuneWagerParameters(minWager Uint64, maxWager Uint64, sc_giveback Uint64) Uint64
+	10 IF ADDRESS_RAW(LOAD("owner")) == ADDRESS_RAW(SIGNER()) THEN GOTO 30 // Validate owner is one calling this function, otherwise return 1
+	20 RETURN 1
+	30 IF minWager != 0 THEN STORE("minWager", minWager)
+	40 IF maxWager != 0 THEN STORE("maxWager", maxWager)
+    50 IF sc_giveback != 0 THEN STORE("sc_giveback", sc_giveback)
+	60 RETURN 0 
+End Function
+
 Function Error(value Uint64) Uint64
     10 DIM return_balance as Uint64
     11 DIM txid as String
