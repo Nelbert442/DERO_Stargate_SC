@@ -17,6 +17,8 @@ End Function
 
 Function biteSizeChunks(destinationAddress String, value Uint64) Uint64
     10 DIM tempValue,tempBalance as Uint64
+    15 DIM txid as String
+    16 LET txid = TXID()
     20 LET tempBalance = LOAD("balance")
     30 IF value > 5000000000000 THEN GOTO 80 // If over 5 DERO in value, then go to loop through and small chunk payments. Else send 5 or less DERO to user
     40 STORE("balance",tempBalance - value)
