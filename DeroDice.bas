@@ -79,8 +79,9 @@ End Function
 
 Function RollDiceHigh(multiplier Uint64, value Uint64) Uint64
     10 DIM rolledNum, targetNumber, payoutAmount as Uint64
-    40 IF value < LOAD("minWager") THEN GOTO 800 // If value is less than 0.5 DERO, Error and send DERO back
-    50 IF value > LOAD("maxWager") THEN GOTO 800 // If value is greater than 10 DERO, Error and send DERO back
+    30 IF value < LOAD("minWager") THEN GOTO 800 // If value is less than 0.5 DERO, Error and send DERO back
+    40 IF value > LOAD("maxWager") THEN GOTO 800 // If value is greater than 10 DERO, Error and send DERO back
+    50 LET payoutAmount = LOAD("sc_giveback") * value * multiplier / 10000
     
     // IF exists "Over-x" + multiplier, then proceed. Else exit because this means they did not supply a multiplier within 2 - 10.
     60 IF EXISTS("Over-x" + multiplier) == 1 THEN GOTO 70 ELSE GOTO 900
@@ -89,17 +90,21 @@ Function RollDiceHigh(multiplier Uint64, value Uint64) Uint64
     80 LET targetNumber = LOAD("Over-x" + multiplier)
     90 IF rolledNum >= targetNumber THEN GOTO 100 ELSE GOTO 500
 
-    100 LET payoutAmount = LOAD("sc_giveback") * value * multiplier / 10000
+    100 IF LOAD("balance") < payoutAmount THEN GOTO 700 ELSE GOTO 110 // If balance cannot cover the potential winnings, error out and send DERO back to SIGNER() [keep some % if balance is 0]
     110 PRINTF "-----------------------------------------------------------------"
     111 PRINTF "You win! You rolled a %d which is higher than %d. You have received %d" rolledNum targetNumber payoutAmount
     112 PRINTF "-----------------------------------------------------------------"
     120 SEND_DERO_TO_ADDRESS(SIGNER(), payoutAmount)
+    125 STORE("balance", LOAD("balance") + (value - payoutAmount))
     130 RETURN 0
 
     500 PRINTF "-----------------------------------------------------------------"
     501 PRINTF "Thanks for playing, however unfortunately you rolled a %d which is lower than %d. TRY AGAIN!" rolledNum targetNumber
     502 PRINTF "-----------------------------------------------------------------"
-    503 RETURN 0
+    503 STORE("balance", LOAD("balance") + value)
+    505 RETURN 0
+
+    700 RETURN Error("Not enough funds available in DeroDice. Please try again later or submit a ticket for funds to be added to pool",value)
 
     800 RETURN Error("Incorrect Wager amount. Please use between 0.5 and 10 DERO",value)
 
@@ -108,8 +113,9 @@ End Function
 
 Function RollDiceLow(multiplier Uint64, value Uint64) Uint64
     10 DIM rolledNum, targetNumber, payoutAmount as Uint64
-    40 IF value < LOAD("minWager") THEN GOTO 800 // If value is less than 0.5 DERO, Error and send DERO back
-    50 IF value > LOAD("maxWager") THEN GOTO 800 // If value is greater than 10 DERO, Error and send DERO back
+    30 IF value < LOAD("minWager") THEN GOTO 800 // If value is less than 0.5 DERO, Error and send DERO back
+    40 IF value > LOAD("maxWager") THEN GOTO 800 // If value is greater than 10 DERO, Error and send DERO back
+    50 LET payoutAmount = LOAD("sc_giveback") * value * multiplier / 10000
     
     // IF exists "Under-x" + multiplier, then proceed. Else exit because this means they did not supply a multiplier within 2 - 10.
     60 IF EXISTS("Under-x" + multiplier) == 1 THEN GOTO 70 ELSE GOTO 900
@@ -118,17 +124,21 @@ Function RollDiceLow(multiplier Uint64, value Uint64) Uint64
     80 LET targetNumber = LOAD("Under-x" + multiplier)
     90 IF rolledNum <= targetNumber THEN GOTO 100 ELSE GOTO 500
 
-    100 LET payoutAmount = LOAD("sc_giveback") * value * multiplier / 10000
+    100 IF LOAD("balance") < payoutAmount THEN GOTO 700 ELSE GOTO 110 // If balance cannot cover the potential winnings, error out and send DERO back to SIGNER() [keep some % if balance is 0]
     110 PRINTF "-----------------------------------------------------------------"
     111 PRINTF "You win! You rolled a %d which is lower than %d. You have received %d" rolledNum targetNumber payoutAmount
     112 PRINTF "-----------------------------------------------------------------"
     120 SEND_DERO_TO_ADDRESS(SIGNER(), payoutAmount)
+    125 STORE("balance", LOAD("balance") + (value - payoutAmount))
     130 RETURN 0
 
     500 PRINTF "-----------------------------------------------------------------"
     501 PRINTF "Thanks for playing, however unfortunately you rolled a %d which is higher than %d. TRY AGAIN!" rolledNum targetNumber
     502 PRINTF "-----------------------------------------------------------------"
-    503 RETURN 0
+    503 STORE("balance", LOAD("balance") + value)
+    505 RETURN 0
+
+    700 RETURN Error("Not enough funds available in DeroDice. Please try again later or submit a ticket for funds to be added to pool",value)
 
     800 RETURN Error("Incorrect Wager amount. Please use between 0.5 and 10 DERO",value)
 
