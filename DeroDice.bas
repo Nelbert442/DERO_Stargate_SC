@@ -99,7 +99,7 @@ Function RollDiceHigh(multiplier Uint64, value Uint64) Uint64
     500 PRINTF "-----------------------------------------------------------------"
     501 PRINTF "Thanks for playing, however unfortunately you rolled a %d which is lower than %d. TRY AGAIN!" rolledNum, targetNumber
     502 PRINTF "-----------------------------------------------------------------"
-    501 RETURN 0
+    503 RETURN 0
 
     800 RETURN Error("Incorrect Wager amount. Please use between 0.5 and 10 DERO",value)
 
@@ -128,7 +128,7 @@ Function RollDiceLow(multiplier Uint64, value Uint64) Uint64
     500 PRINTF "-----------------------------------------------------------------"
     501 PRINTF "Thanks for playing, however unfortunately you rolled a %d which is higher than %d. TRY AGAIN!" rolledNum, targetNumber
     502 PRINTF "-----------------------------------------------------------------"
-    501 RETURN 0
+    503 RETURN 0
 
     800 RETURN Error("Incorrect Wager amount. Please use between 0.5 and 10 DERO",value)
 
