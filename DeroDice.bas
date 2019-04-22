@@ -25,24 +25,24 @@ Function Initialize() Uint64
     40 STORE("sc_giveback", 9800)   // SC will give reward 98% of deposits/winnings, 2.0 % is accumulated for owner to withdraw as well as SC to keep for processing fees etc.
     50 STORE("balance", 0)
 
-    60 STORE("2xOver", 50)
-    61 STORE("2xUnder", 49)
-    65 STORE("3xOver", 67)
-    66 STORE("3xUnder", 33)
-    70 STORE("4xOver", 75)
-    71 STORE("4xUnder", 25)
-    75 STORE("5xOver", 80)
-    76 STORE("5xUnder", 20)
-    80 STORE("6xOver", 84)
-    81 STORE("6xUnder", 16)
-    85 STORE("7xOver", 86)
-    86 STORE("7xUnder", 14)
-    90 STORE("8xOver", 88)
-    91 STORE("8xUnder", 12)
-    95 STORE("9xOver", 89)
-    96 STORE("9xUnder", 11)
-    100 STORE("10xOver", 90)
-    101 STORE("10xUnder", 10)
+    60 STORE("Over-x2", 50)
+    61 STORE("Under-x2", 49)
+    65 STORE("Over-x3", 67)
+    66 STORE("Under-x3", 33)
+    70 STORE("Over-x4", 75)
+    71 STORE("Under-x4", 25)
+    75 STORE("Over-x5", 80)
+    76 STORE("Under-x5", 20)
+    80 STORE("Over-x6", 84)
+    81 STORE("Under-x6", 16)
+    85 STORE("Over-x7", 86)
+    86 STORE("Under-x7", 14)
+    90 STORE("Over-x8", 88)
+    91 STORE("Under-x8", 12)
+    95 STORE("Over-x9", 89)
+    96 STORE("Under-x9", 11)
+    100 STORE("Over-x10", 90)
+    101 STORE("Under-x10", 10)
 
     200 PRINTF "Initialize executed"
     210 RETURN 0
@@ -82,22 +82,22 @@ Function RollDiceHigh(multiplier Uint64, value Uint64) Uint64
     40 IF value < LOAD("minWager") THEN GOTO 800 // If value is less than 0.5 DERO, Error and send DERO back
     50 IF value > LOAD("maxWager") THEN GOTO 800 // If value is greater than 10 DERO, Error and send DERO back
     
-    // IF exists multiplier + "xOver", then proceed. Else exit because this means they did not supply a multiplier within 2 - 10.
-    60 IF EXISTS(multiplier + "xOver") == 1 THEN GOTO 50 ELSE GOTO 900
+    // IF exists "Over-x" + multiplier, then proceed. Else exit because this means they did not supply a multiplier within 2 - 10.
+    60 IF EXISTS("Over-x" + multiplier) == 1 THEN GOTO 70 ELSE GOTO 900
 
     70 LET rolledNum = RANDOM(99) // Randomly choose number between 0 and 99
-    80 LET targetNumber = LOAD(multiplier + "xOver")
-    90 IF rolledNum <= targetNumber THEN GOTO 100 ELSE GOTO 500
+    80 LET targetNumber = LOAD("Over-x" + multiplier)
+    90 IF rolledNum >= targetNumber THEN GOTO 100 ELSE GOTO 500
 
     100 LET payoutAmount = LOAD("sc_giveback") * value * multiplier / 10000
-    110 SEND_DERO_TO_ADDRESS(SIGNER(), payoutAmount)
-    120 PRINTF "-----------------------------------------------------------------"
-    121 PRINTF "You win! You rolled a %d which is higher than %d. You have received %d" rolledNum, targetNumber, payoutAmount
-    122 PRINTF "-----------------------------------------------------------------"
+    110 PRINTF "-----------------------------------------------------------------"
+    111 PRINTF "You win! You rolled a %d which is higher than %d. You have received %d" rolledNum targetNumber payoutAmount
+    112 PRINTF "-----------------------------------------------------------------"
+    120 SEND_DERO_TO_ADDRESS(SIGNER(), payoutAmount)
     130 RETURN 0
 
     500 PRINTF "-----------------------------------------------------------------"
-    501 PRINTF "Thanks for playing, however unfortunately you rolled a %d which is lower than %d. TRY AGAIN!" rolledNum, targetNumber
+    501 PRINTF "Thanks for playing, however unfortunately you rolled a %d which is lower than %d. TRY AGAIN!" rolledNum targetNumber
     502 PRINTF "-----------------------------------------------------------------"
     503 RETURN 0
 
@@ -111,22 +111,22 @@ Function RollDiceLow(multiplier Uint64, value Uint64) Uint64
     40 IF value < LOAD("minWager") THEN GOTO 800 // If value is less than 0.5 DERO, Error and send DERO back
     50 IF value > LOAD("maxWager") THEN GOTO 800 // If value is greater than 10 DERO, Error and send DERO back
     
-    // IF exists multiplier + "xUnder", then proceed. Else exit because this means they did not supply a multiplier within 2 - 10.
-    60 IF EXISTS(multiplier + "xUnder") == 1 THEN GOTO 50 ELSE GOTO 900
+    // IF exists "Under-x" + multiplier, then proceed. Else exit because this means they did not supply a multiplier within 2 - 10.
+    60 IF EXISTS("Under-x" + multiplier) == 1 THEN GOTO 70 ELSE GOTO 900
 
     70 LET rolledNum = RANDOM(99) // Randomly choose number between 0 and 99
-    80 LET targetNumber = LOAD(multiplier + "xUnder")
+    80 LET targetNumber = LOAD("Under-x" + multiplier)
     90 IF rolledNum <= targetNumber THEN GOTO 100 ELSE GOTO 500
 
     100 LET payoutAmount = LOAD("sc_giveback") * value * multiplier / 10000
-    110 SEND_DERO_TO_ADDRESS(SIGNER(), payoutAmount)
-    120 PRINTF "-----------------------------------------------------------------"
-    121 PRINTF "You win! You rolled a %d which is lower than %d. You have received %d" rolledNum, targetNumber, payoutAmount
-    122 PRINTF "-----------------------------------------------------------------"
+    110 PRINTF "-----------------------------------------------------------------"
+    111 PRINTF "You win! You rolled a %d which is lower than %d. You have received %d" rolledNum targetNumber payoutAmount
+    112 PRINTF "-----------------------------------------------------------------"
+    120 SEND_DERO_TO_ADDRESS(SIGNER(), payoutAmount)
     130 RETURN 0
 
     500 PRINTF "-----------------------------------------------------------------"
-    501 PRINTF "Thanks for playing, however unfortunately you rolled a %d which is higher than %d. TRY AGAIN!" rolledNum, targetNumber
+    501 PRINTF "Thanks for playing, however unfortunately you rolled a %d which is higher than %d. TRY AGAIN!" rolledNum targetNumber
     502 PRINTF "-----------------------------------------------------------------"
     503 RETURN 0
 
