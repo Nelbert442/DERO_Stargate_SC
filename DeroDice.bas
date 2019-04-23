@@ -92,7 +92,7 @@ End Function
 
 Function RollDiceHigh(multiplier Uint64, value Uint64) Uint64
     10 DIM rolledNum, targetNumber, payoutAmount, minWager, maxWager, minMultiplier, maxMultiplier as Uint64
-    11 DIM errorMessage as String
+    11 DIM errorMessage,txid as String
     12 LET txid = TXID()
     20 LET minWager = LOAD("minWager")
     21 LET maxWager = LOAD("maxWager")
@@ -135,7 +135,7 @@ End Function
 
 Function RollDiceLow(multiplier Uint64, value Uint64) Uint64
     10 DIM rolledNum, targetNumber, payoutAmount, minWager, maxWager, minMultiplier, maxMultiplier as Uint64
-    11 DIM errorMessage as String
+    11 DIM errorMessage,txid as String
     12 LET txid = TXID()
     20 LET minWager = LOAD("minWager")
     21 LET maxWager = LOAD("maxWager")
