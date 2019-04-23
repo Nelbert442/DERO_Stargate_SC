@@ -44,20 +44,30 @@ Function Initialize() Uint64
     100 STORE("Over-x10", 90)
     101 STORE("Under-x10", 10)
 
-    190 STORE("minMultiplier", 2)
-    191 STORE("maxMultiplier", 10)
+    190 STORE("minMultiplier", 2) // TODO: Add to TuneWagerParameters, if and only if develop loop to generate the Over-x# and Under-x# values. Can do with math and looping for var creation incrementing tempcounter, just need to circle back to it
+    191 STORE("maxMultiplier", 10) // TODO: Add to TuneWagerParameters, if and only if develop loop to generate the Over-x# and Under-x# values. Can do with math and looping for var creation incrementing tempcounter, just need to circle back to it
 
     200 PRINTF "Initialize executed"
     210 RETURN 0
 End Function
 
 Function TuneWagerParameters(minWager Uint64, maxWager Uint64, sc_giveback Uint64) Uint64
-	10 IF ADDRESS_RAW(LOAD("owner")) == ADDRESS_RAW(SIGNER()) THEN GOTO 30 // Validate owner is one calling this function, otherwise return 1
-	20 RETURN 1
+	10 DIM tempcounter as Uint64
+    20 IF ADDRESS_RAW(LOAD("owner")) == ADDRESS_RAW(SIGNER()) THEN GOTO 30 // Validate owner is one calling this function, otherwise return 1
+	25 RETURN 1
 	30 IF minWager != 0 THEN STORE("minWager", minWager)
-	40 IF maxWager != 0 THEN STORE("maxWager", maxWager)
-    50 IF sc_giveback != 0 THEN STORE("sc_giveback", sc_giveback)
-	60 RETURN 0 
+	35 IF maxWager != 0 THEN STORE("maxWager", maxWager)
+    40 IF sc_giveback != 0 THEN STORE("sc_giveback", sc_giveback)
+
+    // 60 IF minMultiplier > 1 THEN STORE("minMultiplier", minMultiplier) ELSE GOTO 150 // If minimum multiplier is greater than 1, otherwise go to 150 to continue to check on max multiplier. 
+
+    // TODO: Loop to generate / store over-under values. Check exists() prior. If exists() for a given minimum (e.g. 2 or 3), then no need. If not, then create. Over time the list of multiplier vals will be stored
+
+    // 150 IF maxMultiplier != 0 THEN STORE("maxMultiplier", maxMultiplier) ELSE GOTO 200 // If max multiplier exists, then generate otherwise go to end RETURN
+
+    // TODO: Loop to generate / store over-under values. Check exists() prior. If exists() for a given maximum (e.g. 12 or 13), then no need. If not, then create. Over time the list of multiplier vals will be stored
+
+	200 RETURN 0 
 End Function
 
 Function Error(errorMessage String, value Uint64) Uint64
