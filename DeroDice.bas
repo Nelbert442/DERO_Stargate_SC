@@ -98,8 +98,8 @@ Function RollDiceHigh(multiplier Uint64, value Uint64) Uint64
     21 LET maxWager = LOAD("maxWager")
     22 LET minMultiplier = LOAD("minMultiplier")
     23 LET maxMultiplier = LOAD("maxMultiplier")
-    30 IF value < minWager THEN GOTO 800 // If value is less than 0.5 DERO, Error and send DERO back
-    40 IF value > maxWager THEN GOTO 800 // If value is greater than 10 DERO, Error and send DERO back
+    30 IF value < minWager THEN GOTO 800 // If value is less than stored minimum wager (e.g. 0.5), Error and send DERO back
+    40 IF value > maxWager THEN GOTO 800 // If value is greater than stored maximum wager (e.g. 10), Error and send DERO back
     50 LET payoutAmount = LOAD("sc_giveback") * value * multiplier / 10000
     
     // IF exists "Over-x" + multiplier, then proceed. Else exit because this means they did not supply a multiplier within 2 - 10.
@@ -141,8 +141,8 @@ Function RollDiceLow(multiplier Uint64, value Uint64) Uint64
     21 LET maxWager = LOAD("maxWager")
     22 LET minMultiplier = LOAD("minMultiplier")
     23 LET maxMultiplier = LOAD("maxMultiplier")
-    30 IF value < minWager THEN GOTO 800 // If value is less than 0.5 DERO, Error and send DERO back
-    40 IF value > maxWager THEN GOTO 800 // If value is greater than 10 DERO, Error and send DERO back
+    30 IF value < minWager THEN GOTO 800 // If value is less than stored minimum wager (e.g. 0.5), Error and send DERO back
+    40 IF value > maxWager THEN GOTO 800 // If value is greater than stored maximum wager (e.g. 10), Error and send DERO back
     50 LET payoutAmount = LOAD("sc_giveback") * value * multiplier / 10000
     
     // IF exists "Under-x" + multiplier, then proceed. Else exit because this means they did not supply a multiplier within 2 - 10.
