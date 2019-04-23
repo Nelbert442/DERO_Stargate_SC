@@ -126,10 +126,10 @@ Function RollDiceHigh(multiplier Uint64, value Uint64) Uint64
 
     700 RETURN Error("Not enough funds available in DeroDice. Please try again later or submit a ticket for funds to be added to pool",value)
 
-    800 LET errorMessage = "Incorrect Wager amount. Please use between" + minWager + " and " + maxWager + " DERO"
+    800 LET errorMessage = "Incorrect Wager amount. Please use between " + minWager + " and " + maxWager + " DERO"
     820 RETURN Error(errorMessage,value)
 
-    900 LET errorMessage = "Incorrect multiplier. Please use between" + minMultiplier + " and " + maxMultiplier
+    900 LET errorMessage = "Incorrect multiplier. Please use between " + minMultiplier + " and " + maxMultiplier
     920 RETURN Error(errorMessage,value)
 End Function
 
@@ -169,9 +169,9 @@ Function RollDiceLow(multiplier Uint64, value Uint64) Uint64
 
     700 RETURN Error("Not enough funds available in DeroDice. Please try again later or submit a ticket for funds to be added to pool",value)
 
-    800 LET errorMessage = "Incorrect Wager amount. Please use between" + minWager + " and " + maxWager + " DERO"
+    800 LET errorMessage = "Incorrect Wager amount. Please use between " + minWager + " and " + maxWager + " DERO"
     820 RETURN Error(errorMessage,value)
 
-    900 LET errorMessage = "Incorrect multiplier. Please use between" + minMultiplier + " and " + maxMultiplier
+    900 LET errorMessage = "Incorrect multiplier. Please use between " + minMultiplier + " and " + maxMultiplier
     920 RETURN Error(errorMessage,value)
 End Function
