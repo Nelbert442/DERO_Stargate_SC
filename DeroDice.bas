@@ -44,6 +44,9 @@ Function Initialize() Uint64
     100 STORE("Over-x10", 90)
     101 STORE("Under-x10", 10)
 
+    190 STORE("minMultiplier", 2)
+    191 STORE("maxMultiplier", 10)
+
     200 PRINTF "Initialize executed"
     210 RETURN 0
 End Function
@@ -78,9 +81,15 @@ Function Error(errorMessage String, value Uint64) Uint64
 End Function
 
 Function RollDiceHigh(multiplier Uint64, value Uint64) Uint64
-    10 DIM rolledNum, targetNumber, payoutAmount as Uint64
-    30 IF value < LOAD("minWager") THEN GOTO 800 // If value is less than 0.5 DERO, Error and send DERO back
-    40 IF value > LOAD("maxWager") THEN GOTO 800 // If value is greater than 10 DERO, Error and send DERO back
+    10 DIM rolledNum, targetNumber, payoutAmount, minWager, maxWager, minMultiplier, maxMultiplier as Uint64
+    11 DIM errorMessage as String
+    12 LET txid = TXID()
+    20 LET minWager = LOAD("minWager")
+    21 LET maxWager = LOAD("maxWager")
+    22 LET minMultiplier = LOAD("minMultiplier")
+    23 LET maxMultiplier = LOAD("maxMultiplier")
+    30 IF value < minWager THEN GOTO 800 // If value is less than 0.5 DERO, Error and send DERO back
+    40 IF value > maxWager THEN GOTO 800 // If value is greater than 10 DERO, Error and send DERO back
     50 LET payoutAmount = LOAD("sc_giveback") * value * multiplier / 10000
     
     // IF exists "Over-x" + multiplier, then proceed. Else exit because this means they did not supply a multiplier within 2 - 10.
@@ -93,7 +102,8 @@ Function RollDiceHigh(multiplier Uint64, value Uint64) Uint64
     100 IF LOAD("balance") < payoutAmount THEN GOTO 700 ELSE GOTO 110 // If balance cannot cover the potential winnings, error out and send DERO back to SIGNER() [keep some % if balance is 0]
     110 PRINTF "-----------------------------------------------------------------"
     111 PRINTF "You win! You rolled a %d which is higher than %d. You have received %d" rolledNum targetNumber payoutAmount
-    112 PRINTF "-----------------------------------------------------------------"
+    112 PRINTF "TXID: %s" txid
+    113 PRINTF "-----------------------------------------------------------------"
     120 SEND_DERO_TO_ADDRESS(SIGNER(), payoutAmount)
     125 STORE("balance", LOAD("balance") + (value - payoutAmount))
     130 RETURN 0
@@ -106,15 +116,23 @@ Function RollDiceHigh(multiplier Uint64, value Uint64) Uint64
 
     700 RETURN Error("Not enough funds available in DeroDice. Please try again later or submit a ticket for funds to be added to pool",value)
 
-    800 RETURN Error("Incorrect Wager amount. Please use between 0.5 and 10 DERO",value)
+    800 LET errorMessage = "Incorrect Wager amount. Please use between" + minWager + " and " + maxWager + " DERO"
+    820 RETURN Error(errorMessage,value)
 
-    900 RETURN Error("Incorrect multiplier. Please use between 2 and 10",value)
+    900 LET errorMessage = "Incorrect multiplier. Please use between" + minMultiplier + " and " + maxMultiplier
+    920 RETURN Error(errorMessage,value)
 End Function
 
 Function RollDiceLow(multiplier Uint64, value Uint64) Uint64
-    10 DIM rolledNum, targetNumber, payoutAmount as Uint64
-    30 IF value < LOAD("minWager") THEN GOTO 800 // If value is less than 0.5 DERO, Error and send DERO back
-    40 IF value > LOAD("maxWager") THEN GOTO 800 // If value is greater than 10 DERO, Error and send DERO back
+    10 DIM rolledNum, targetNumber, payoutAmount, minWager, maxWager, minMultiplier, maxMultiplier as Uint64
+    11 DIM errorMessage as String
+    12 LET txid = TXID()
+    20 LET minWager = LOAD("minWager")
+    21 LET maxWager = LOAD("maxWager")
+    22 LET minMultiplier = LOAD("minMultiplier")
+    23 LET maxMultiplier = LOAD("maxMultiplier")
+    30 IF value < minWager THEN GOTO 800 // If value is less than 0.5 DERO, Error and send DERO back
+    40 IF value > maxWager THEN GOTO 800 // If value is greater than 10 DERO, Error and send DERO back
     50 LET payoutAmount = LOAD("sc_giveback") * value * multiplier / 10000
     
     // IF exists "Under-x" + multiplier, then proceed. Else exit because this means they did not supply a multiplier within 2 - 10.
@@ -127,7 +145,8 @@ Function RollDiceLow(multiplier Uint64, value Uint64) Uint64
     100 IF LOAD("balance") < payoutAmount THEN GOTO 700 ELSE GOTO 110 // If balance cannot cover the potential winnings, error out and send DERO back to SIGNER() [keep some % if balance is 0]
     110 PRINTF "-----------------------------------------------------------------"
     111 PRINTF "You win! You rolled a %d which is lower than %d. You have received %d" rolledNum targetNumber payoutAmount
-    112 PRINTF "-----------------------------------------------------------------"
+    112 PRINTF "TXID: %s" txid
+    113 PRINTF "-----------------------------------------------------------------"
     120 SEND_DERO_TO_ADDRESS(SIGNER(), payoutAmount)
     125 STORE("balance", LOAD("balance") + (value - payoutAmount))
     130 RETURN 0
@@ -140,7 +159,9 @@ Function RollDiceLow(multiplier Uint64, value Uint64) Uint64
 
     700 RETURN Error("Not enough funds available in DeroDice. Please try again later or submit a ticket for funds to be added to pool",value)
 
-    800 RETURN Error("Incorrect Wager amount. Please use between 0.5 and 10 DERO",value)
+    800 LET errorMessage = "Incorrect Wager amount. Please use between" + minWager + " and " + maxWager + " DERO"
+    820 RETURN Error(errorMessage,value)
 
-    900 RETURN Error("Incorrect multiplier. Please use between 2 and 10",value)
+    900 LET errorMessage = "Incorrect multiplier. Please use between" + minMultiplier + " and " + maxMultiplier
+    920 RETURN Error(errorMessage,value)
 End Function
