@@ -39,6 +39,55 @@ In this example, you can see that block_between_withdraw is being set to 150 blo
 curl -X POST http://127.0.0.1:30309/json_rpc -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":"0","method":"transfer_split","params":{"mixin":5,"get_tx_key":true,"sc_tx":{"entrypoint":"TuneTimeBoxParameters","scid":"5d4549c4ea7da704152e4019804d5d91daf59b00c1342830959c44fddec272cd", "params":{ "block_between_withdraw":"150", "sc_giveback":"9500" } }}}"'
 ```
 
+## DeroDice.bas
+Attempt at similar product as Ether Dice etc. Dice rolling game in which you can choose between a 2x and a 10x multiplier (increment by 1s [e.g. 2x, 3x, 4x, ... 10x]) and roll high or low.
+The high and low numbers are defined as such:
+```
+    2x --> 50 or over --> 49 or under
+    3x --> 67 or over --> 33 or under
+    4x --> 75 or over --> 25 or under
+    5x --> 80 or over --> 20 or under
+    6x --> 84 or over --> 16 or under
+    7x --> 86 or over --> 14 or under
+    8x --> 88 or over --> 12 or under
+    9x --> 89 or over --> 11 or under
+    10x --> 90 or over --> 10 or under
+```
+
+There is a minimum wager/bet amount of 0.5 DERO and maximum wager/bet amount of 10 DERO
+
+### Initialize Contract (initializes SC and makes you, the SIGNER(), the owner)
+
+```
+curl --request POST --data-binary @DeroDice.bas http://127.0.0.1:30309/install_sc
+```
+
+### e.x.1 (Roll High with 2x Multiplier - Wagering 2 DERO): 
+```
+curl -X POST http://127.0.0.1:30309/json_rpc -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":"0","method":"transfer_split","params":{"mixin":5,"get_tx_key":true,"sc_tx":{"entrypoint":"RollDiceHigh","scid":"7c71b8fbe416e2d896fd69fbc800741ff7f89d45bce28c2bee5b5bed8deaca1a", "value":2000000000000, "params":{ "multiplier":"2" } }}}"'
+
+http://pool.dero.io:8080/tx/928fbc1f015eeaa02c116686e4958d41cae9f1451facad1f001cad544df8ba61
+```
+
+### e.x.2 (Roll Low with 2x Multiplier - Wagering 2 DERO):
+```
+curl -X POST http://127.0.0.1:30309/json_rpc -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":"0","method":"transfer_split","params":{"mixin":5,"get_tx_key":true,"sc_tx":{"entrypoint":"RollDiceLow","scid":"7c71b8fbe416e2d896fd69fbc800741ff7f89d45bce28c2bee5b5bed8deaca1a", "value":2000000000000, "params":{ "multiplier":"2" } }}}"'
+
+http://pool.dero.io:8080/tx/b8d7a2ddc5d25530833d56f36e6eb55bfd0f2ef2d98605d892f8a69afae001ef
+```
+
+### e.x.3 (TuneWagerParameters())
+If you are the owner of the SC when initialized, you can then modify two of the built-in values: minWager, maxWager and sc_giveback. Once this function is ran, any transactions AFTER this has been ran will utilize these new values. This does not apply to previous transactions sent via the SC.
+
+minWager: This is the value that users must use as a minimum bet, if they bet lower than this it will be rejected and returned to them.
+maxWager: This is the value that users must us as a maximum bet, if they bet higher than this it will be rejected and returned to them.
+sc_giveback: This is defining a percentage that the SC is giving to the Winnders. By default this value is set to 98%, however can be tuned with this function.
+
+In this example, you can see that minWager is being set to 0.5 DERO (500000000000), the maxWager is being set to 10 DERO (10000000000000) and sc_giveback is being set to 98% (9800) given back to the Winner, keeping 2% for the SC.
+```
+curl -X POST http://127.0.0.1:30309/json_rpc -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":"0","method":"transfer_split","params":{"mixin":5,"get_tx_key":true,"sc_tx":{"entrypoint":"TuneWagerParameters","scid":"7c71b8fbe416e2d896fd69fbc800741ff7f89d45bce28c2bee5b5bed8deaca1a", "params":{ "minWager":"500000000000", "maxWager":"10000000000000", "sc_giveback":"9800" } }}}"'
+```
+
 ## ValidateBalance.bas
 Use Validate Balance to allow for you (the owner) to deposit/withdraw DERO from and 3rd parties (others) to view TXIDs and Balance totals via RPC call. This SC is intended to be utilized in the form of a public wallet so to speak, this way there is no question or FUD related to TXIDs or Balance remaining in a given address.
 
