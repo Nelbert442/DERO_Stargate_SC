@@ -90,6 +90,20 @@ Function Error(errorMessage String, value Uint64) Uint64
     999 RETURN 0
 End Function
 
+Function Donate(value Uint64) Uint64
+	10 DIM balance, tempcounter as Uint64
+    11 DIM errorMessage,txid as String
+    15 IF value == 0 THEN GOTO 85  // if value is 0, simply return
+
+	50 LET balance = LOAD("balance") + value
+	60 STORE("balance", balance)
+    65 LET txid = TXID()
+    70 PRINTF "----------------------------------------------------------------------"
+	75 PRINTF "Donation executed. TXID: %s" txid
+    80 PRINTF "----------------------------------------------------------------------"
+	85 RETURN 0
+End Function
+
 Function RollDiceHigh(multiplier Uint64, value Uint64) Uint64
     10 DIM rolledNum, targetNumber, payoutAmount, minWager, maxWager, minMultiplier, maxMultiplier as Uint64
     11 DIM errorMessage,txid as String
