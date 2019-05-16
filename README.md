@@ -88,6 +88,13 @@ In this example, you can see that minWager is being set to 0.5 DERO (50000000000
 curl -X POST http://127.0.0.1:30309/json_rpc -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":"0","method":"transfer_split","params":{"mixin":5,"get_tx_key":true,"sc_tx":{"entrypoint":"TuneWagerParameters","scid":"7c71b8fbe416e2d896fd69fbc800741ff7f89d45bce28c2bee5b5bed8deaca1a", "params":{ "minWager":"500000000000", "maxWager":"10000000000000", "sc_giveback":"9800" } }}}"'
 ```
 
+### e.x.4 (Donate to SC DERO Pool for Payouts):
+```
+curl -X POST http://127.0.0.1:30309/json_rpc -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":"0","method":"transfer_split","params":{"mixin":5,"get_tx_key":true,"sc_tx":{"entrypoint":"Donate","scid":"1a834a0fc0fb5eeaf5a1314797b504925371ac334c536965416dcc053e7eae25", "value":5000000000000 }}}"'
+
+http://pool.dero.io:8080/tx/8c39f590511b9d5be0139f912cb3387cc61ce04f0239c4a76fe9a1f08d37932c
+```
+
 ## ValidateBalance.bas
 Use Validate Balance to allow for you (the owner) to deposit/withdraw DERO from and 3rd parties (others) to view TXIDs and Balance totals via RPC call. This SC is intended to be utilized in the form of a public wallet so to speak, this way there is no question or FUD related to TXIDs or Balance remaining in a given address.
 
