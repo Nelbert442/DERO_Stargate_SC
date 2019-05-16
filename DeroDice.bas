@@ -105,9 +105,13 @@ Function Donate(value Uint64) Uint64
 End Function
 
 Function RollDiceHigh(multiplier Uint64, value Uint64) Uint64
-    10 DIM rolledNum, targetNumber, payoutAmount, minWager, maxWager, minMultiplier, maxMultiplier as Uint64
+    10 DIM rolledNum, targetNumber, payoutAmount, minWager, maxWager, minMultiplier, maxMultiplier, currentTopoHeight as Uint64
     11 DIM errorMessage,txid as String
     12 LET txid = TXID()
+    15 LET currentTopoHeight = BLOCK_TOPOHEIGHT()
+    16 IF EXISTS(SIGNER()) == 1 THEN GOTO 17 ELSE GOTO 18
+    17 IF LOAD(SIGNER()) == currentTopoHeight THEN GOTO 600 // Check for SIGNER() variable value and see if it is equal to current topoheight, if so then error out and return value, otherwise store topoheight and continue
+    18 STORE(SIGNER(), currentTopoHeight)
     20 LET minWager = LOAD("minWager")
     21 LET maxWager = LOAD("maxWager")
     22 LET minMultiplier = LOAD("minMultiplier")
@@ -138,6 +142,8 @@ Function RollDiceHigh(multiplier Uint64, value Uint64) Uint64
     503 STORE("balance", LOAD("balance") + value)
     505 RETURN 0
 
+    600 RETURN Error("DeroDice already played at current topoheight, please wait a few seconds then try again",value)
+
     700 RETURN Error("Not enough funds available in DeroDice. Please try again later or submit a ticket for funds to be added to pool",value)
 
     800 LET errorMessage = "Incorrect Wager amount. Please use between " + minWager + " and " + maxWager + " DERO"
@@ -148,9 +154,13 @@ Function RollDiceHigh(multiplier Uint64, value Uint64) Uint64
 End Function
 
 Function RollDiceLow(multiplier Uint64, value Uint64) Uint64
-    10 DIM rolledNum, targetNumber, payoutAmount, minWager, maxWager, minMultiplier, maxMultiplier as Uint64
+    10 DIM rolledNum, targetNumber, payoutAmount, minWager, maxWager, minMultiplier, maxMultiplier, currentTopoHeight as Uint64
     11 DIM errorMessage,txid as String
     12 LET txid = TXID()
+    15 LET currentTopoHeight = BLOCK_TOPOHEIGHT()
+    16 IF EXISTS(SIGNER()) == 1 THEN GOTO 17 ELSE GOTO 18
+    17 IF LOAD(SIGNER()) == currentTopoHeight THEN GOTO 600 // Check for SIGNER() variable value and see if it is equal to current topoheight, if so then error out and return value, otherwise store topoheight and continue
+    18 STORE(SIGNER(), currentTopoHeight)
     20 LET minWager = LOAD("minWager")
     21 LET maxWager = LOAD("maxWager")
     22 LET minMultiplier = LOAD("minMultiplier")
@@ -180,6 +190,8 @@ Function RollDiceLow(multiplier Uint64, value Uint64) Uint64
     502 PRINTF "-----------------------------------------------------------------"
     503 STORE("balance", LOAD("balance") + value)
     505 RETURN 0
+
+    600 RETURN Error("DeroDice already played at current topoheight, please wait a few seconds then try again",value)
 
     700 RETURN Error("Not enough funds available in DeroDice. Please try again later or submit a ticket for funds to be added to pool",value)
 
